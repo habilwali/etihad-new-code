@@ -1,0 +1,17 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/assets/fonts/Fonts/EtihadAltis-Book.ttf",
+      "sha1": "6a71ab5ab1dbf70bcb4df7cd423c30ef09c25dc4"
+    },
+    {
+      "path": "src/assets/fonts/Fonts/EtihadAltis-Medium.ttf",
+      "sha1": "9e8983224280de747b6b63260d842e42a51a08ff"
+    },
+    {
+      "path": "src/assets/fonts/Fonts/EtihadAltis-Text.ttf",
+      "sha1": "f47f9dd4d0ed42d901aea3d7dcf1da27787f062a"
+    }
+  ]
+}

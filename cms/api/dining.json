@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "name": "Pizza Di Rocco",
+    "emoji": "🍕",
+    "cuisine": "Pizza · Pasta · Italian",
+    "michelin": null,
+    "heroImg": "https://images.unsplash.com/photo-1513104890138-7c749629a9c2?w=1400&q=80",
+    "menu": {
+      "Starters": [
+        {
+          "name": "Bruschetta",
+          "desc": "Tomato, basil, olive oil",
+          "price": "28 AED",
+          "badge": null,
+          "img": "http://10.10.120.11/uploads/dining/dn_69fa087d5397f5.62775439.png"
+        }
+      ],
+      "Mains": [],
+      "Desserts": [],
+      "Drinks": []
+    }
+  }
+]

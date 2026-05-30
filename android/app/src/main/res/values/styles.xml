@@ -1,0 +1,19 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!-- Splash: logo on dark — shows immediately when app opens, no empty dark screen -->
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
+    </style>
+
+    <!--
+      TV performance: Disable window transition animations.
+      Reduces frame drops on budget Android TV during D-pad navigation.
+    -->
+    <style name="AppTheme.NoAnimation" parent="AppTheme">
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowDisablePreview">true</item>
+    </style>
+
+</resources>
