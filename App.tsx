@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   Animated,
   BackHandler,
@@ -118,12 +118,29 @@ function AppContent(): React.JSX.Element {
   const screenRef = useRef(screen);
   screenRef.current = screen;
 
-  /** RN only emits hardwareBackPress from activity onBackPressed; MainActivity no longer swallows BACK in dispatchKeyEvent, so this runs after JS onKeyDown. Consume back when not on home so the default handler does not exit the app. */
+  // Timestamp set whenever a screen's onKeyDown handler calls onBack().
+  // BACK triggers two JS events: onKeyDown (ACTION_DOWN) then hardwareBackPress
+  // (ACTION_UP via onBackPressed). By the time hardwareBackPress fires, React
+  // may have already re-rendered so screenRef.current === 'welcome'. We use
+  // this timestamp to detect that scenario and consume the event silently.
+  const navigatedBackViaKeyRef = useRef(0);
+
+  const handleBack = useCallback(() => {
+    navigatedBackViaKeyRef.current = Date.now();
+    setScreen('welcome');
+  }, []);
+
   useEffect(() => {
     if (Platform.OS !== 'android') {
       return undefined;
     }
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      // If onKeyDown already handled this back press within the last 500 ms,
+      // screenRef may already show 'welcome'. Consume the event to prevent
+      // BackHandler.exitApp() being called.
+      if (Date.now() - navigatedBackViaKeyRef.current < 500) {
+        return true;
+      }
       if (screenRef.current !== 'welcome') {
         setScreen('welcome');
         return true;
@@ -237,7 +254,7 @@ function AppContent(): React.JSX.Element {
           <OccupationalHealthSafetyScreen
             {...commonProps}
             isActive={screen === 'health'}
-            onBack={() => setScreen('welcome')}
+            onBack={handleBack}
           />
         </AnimatedScreen>
       )}
@@ -247,7 +264,7 @@ function AppContent(): React.JSX.Element {
             {...commonProps}
             isActive={screen === 'facilities'}
             backgroundImageSource={null}
-            onBack={() => setScreen('welcome')}
+            onBack={handleBack}
           />
         </AnimatedScreen>
       )}
@@ -255,7 +272,7 @@ function AppContent(): React.JSX.Element {
         <AnimatedScreen isActive={screen === 'channel'}>
           <EtihadChannelScreen
             isActive={screen === 'channel'}
-            onBack={() => setScreen('welcome')}
+            onBack={handleBack}
           />
         </AnimatedScreen>
       )}
@@ -263,7 +280,7 @@ function AppContent(): React.JSX.Element {
         <AnimatedScreen isActive={screen === 'etihadChannels'}>
           <EtihadChannelsScreen
             isActive={screen === 'etihadChannels'}
-            onBack={() => setScreen('welcome')}
+            onBack={handleBack}
           />
         </AnimatedScreen>
       )}
@@ -271,7 +288,7 @@ function AppContent(): React.JSX.Element {
         <AnimatedScreen isActive={screen === 'dining'}>
           <EtihadDiningScreen
             isActive={screen === 'dining'}
-            onBack={() => setScreen('welcome')}
+            onBack={handleBack}
           />
         </AnimatedScreen>
       )}
@@ -279,7 +296,7 @@ function AppContent(): React.JSX.Element {
         <AnimatedScreen isActive={screen === 'plaza'}>
           <EtihadPlazaScreen
             isActive={screen === 'plaza'}
-            onBack={() => setScreen('welcome')}
+            onBack={handleBack}
           />
         </AnimatedScreen>
       )}
@@ -287,7 +304,7 @@ function AppContent(): React.JSX.Element {
         <AnimatedScreen isActive={screen === 'hypermarket'}>
           <EtihadHypermarketScreen
             isActive={screen === 'hypermarket'}
-            onBack={() => setScreen('welcome')}
+            onBack={handleBack}
           />
         </AnimatedScreen>
       )}
@@ -295,7 +312,7 @@ function AppContent(): React.JSX.Element {
         <AnimatedScreen isActive={screen === 'notifications'}>
           <NotificationScreen
             isActive={screen === 'notifications'}
-            onBack={() => setScreen('welcome')}
+            onBack={handleBack}
           />
         </AnimatedScreen>
       )}
