@@ -22,7 +22,9 @@
     "react-native-fast-image": "^8.6.3",
     "react-native-keyevent": "^0.3.2",
     "react-native-linear-gradient": "^2.8.3",
-    "react-native-video": "^6.19.2"
+    "react-native-pdf": "^7.0.4",
+    "react-native-video": "^6.19.2",
+    "react-native-webview": "^14.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

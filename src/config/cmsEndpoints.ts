@@ -171,6 +171,57 @@ export function buildGetHealthSafetyUrl(): string {
   return `${getCmsHttpOrigin()}/api/get_health_safety.php`;
 }
 
+// ---------------------------------------------------------------------------
+// Per-tenant targeting helpers
+// ---------------------------------------------------------------------------
+
+/** Normalise a raw MAC address to uppercase colon-separated form (AA:BB:CC:DD:EE:FF). */
+export function normalizeDeviceMac(mac: string): string {
+  return mac.trim().toUpperCase();
+}
+
+/**
+ * WebSocket URL for the CMS real-time push channel.
+ * Includes `?mac=` so the server can route per-tenant messages.
+ * When `mac` is empty the legacy URL (no query string) is returned for backward compat.
+ */
+export function buildCmsWebSocketUrl(mac: string): string {
+  const base = `ws://${CMS_HOST}:8765`;
+  const m = mac.trim();
+  if (!m) return base;
+  return `${base}/?mac=${encodeURIComponent(normalizeDeviceMac(m))}`;
+}
+
+/**
+ * Emergency-alert poll endpoint with optional MAC for per-tenant delivery.
+ * Path corrected to `/emergency-alerts/index.php` (not `/index.php`).
+ */
+export function buildCmsAlertPollUrl(mac: string): string {
+  const base = `${getCmsHttpOrigin()}/emergency-alerts/index.php?api=alert`;
+  const m = mac.trim();
+  if (!m) return base;
+  return `${base}&mac=${encodeURIComponent(normalizeDeviceMac(m))}`;
+}
+
+/**
+ * Notifications history endpoint with optional MAC for per-tenant delivery.
+ * Path corrected to `/emergency-alerts/index.php` (not `/index.php`).
+ */
+export function buildCmsNotificationsUrl(mac: string): string {
+  const base = `${getCmsHttpOrigin()}/emergency-alerts/index.php?api=notifications`;
+  const m = mac.trim();
+  if (!m) return base;
+  return `${base}&mac=${encodeURIComponent(normalizeDeviceMac(m))}`;
+}
+
+// ---------------------------------------------------------------------------
+// Legacy constants — kept for backward compat; paths corrected.
+// Prefer the builder functions above for new code so MAC can be included.
+// ---------------------------------------------------------------------------
+
+/** @deprecated Use {@link buildCmsWebSocketUrl} with the device MAC instead. */
 export const CMS_WS_URL = `ws://${CMS_HOST}:8765`;
-export const CMS_ALERT_POLL_URL = `${getCmsHttpOrigin()}/index.php?api=alert`;
-export const CMS_NOTIFICATIONS_REST_URL = `${getCmsHttpOrigin()}/index.php?api=notifications`;
+/** @deprecated Use {@link buildCmsAlertPollUrl} with the device MAC instead. */
+export const CMS_ALERT_POLL_URL = `${getCmsHttpOrigin()}/emergency-alerts/index.php?api=alert`;
+/** @deprecated Use {@link buildCmsNotificationsUrl} with the device MAC instead. */
+export const CMS_NOTIFICATIONS_REST_URL = `${getCmsHttpOrigin()}/emergency-alerts/index.php?api=notifications`;

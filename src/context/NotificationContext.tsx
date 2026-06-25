@@ -1,12 +1,20 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export interface NotificationAttachment {
+  url: string;
+  name: string;
+  mime: string;
+  size: number;
+}
+
 export interface NotificationItem {
   id: string;
   title: string;
   message: string;
   createdAt: string;
   seen: boolean;
+  attachment?: NotificationAttachment;
 }
 
 interface NotificationContextType {
@@ -110,6 +118,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
           title: item.title,
           message: item.message,
           createdAt: item.createdAt,
+          // Prefer the freshest attachment data; fall back to what we already stored
+          attachment: item.attachment ?? existing?.attachment,
           // Preserve local seen state across restarts; otherwise respect API seen if provided
           seen: existing?.seen ?? seenFromStorage ?? item.seen ?? false,
         });

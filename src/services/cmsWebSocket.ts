@@ -2,14 +2,21 @@
  * Single shared WebSocket to the CMS.
  * Opening two sockets (alerts + notifications) often means only one receives
  * broadcasts; the other stays idle. All subscribers get every message and filter locally.
+ *
+ * Call {@link setCmsDeviceMac} once the device MAC is known so the connection
+ * uses `?mac=AA:BB:CC:DD:EE:FF` for per-tenant message routing. The server
+ * still delivers "send-to-all" broadcasts regardless of MAC.
  */
-import { CMS_WS_URL } from '../config/cmsEndpoints';
+import { buildCmsWebSocketUrl, normalizeDeviceMac } from '../config/cmsEndpoints';
 
 type DataHandler = (data: string) => void;
 type OpenHandler = () => void;
 
 let socket: WebSocket | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** MAC set via {@link setCmsDeviceMac}. Empty string = connect without MAC (legacy). */
+let deviceMac = '';
 
 const messageHandlers = new Set<DataHandler>();
 const openHandlers = new Set<OpenHandler>();
@@ -67,11 +74,20 @@ function connectIfNeeded() {
   }
 
   try {
-    socket = new WebSocket(CMS_WS_URL);
-    if (__DEV__) console.log('[CMS WS] connecting (shared)', CMS_WS_URL);
+    const wsUrl = buildCmsWebSocketUrl(deviceMac);
+    socket = new WebSocket(wsUrl);
+    if (__DEV__) console.log('[CMS WS] connecting (shared)', wsUrl);
 
     socket.onopen = () => {
       if (__DEV__) console.log('[CMS WS] open — subscribers:', messageHandlers.size);
+      // Belt-and-suspenders: also send REGISTER in case server prefers message-based auth.
+      if (deviceMac) {
+        try {
+          socket?.send(JSON.stringify({ type: 'REGISTER', mac: deviceMac }));
+        } catch {
+          /* ignore — server may not require REGISTER when ?mac= is on the URL */
+        }
+      }
       broadcastOpen();
     };
 
@@ -105,6 +121,36 @@ function connectIfNeeded() {
 export interface CmsWsSubscription {
   onMessage: DataHandler;
   onOpen?: OpenHandler;
+}
+
+/**
+ * Inform the shared WebSocket about the device MAC address.
+ * - If already open: sends a `REGISTER` message so the server can start filtering.
+ * - If connecting / closed: stores MAC and uses it for the next `connectIfNeeded()`,
+ *   forcing a reconnect so the new URL includes `?mac=`.
+ * Safe to call multiple times; a no-op when the MAC is unchanged.
+ */
+export function setCmsDeviceMac(mac: string): void {
+  const normalized = normalizeDeviceMac(mac);
+  if (normalized === deviceMac) return;
+  deviceMac = normalized;
+
+  if (socket?.readyState === WebSocket.OPEN) {
+    // Already connected — update server via REGISTER (URL already established).
+    try {
+      socket.send(JSON.stringify({ type: 'REGISTER', mac: deviceMac }));
+    } catch {
+      /* ignore */
+    }
+  } else {
+    // Reconnect so the new URL carries ?mac=
+    clearReconnect();
+    if (socket) {
+      try { socket.close(); } catch { /* ignore */ }
+      socket = null;
+    }
+    connectIfNeeded();
+  }
 }
 
 /**

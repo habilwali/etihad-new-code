@@ -73,11 +73,22 @@ function logMacResolve(t0: number, path: string): void {
   welcomePerfSetMac(ms, path);
 }
 
+/** Single shared promise — all concurrent callers share the same hardware probe. */
+let _macPromise: Promise<string> | undefined;
+
 /**
  * MAC for all CMS calls: override → Android hardware probe → configured fallback → {@link DEFAULT_DEVICE_MAC}.
  * Always returns a non-empty string (never null).
+ * Result is cached after the first resolution so subsequent calls are instant.
  */
-export async function getDeviceMacForWelcomeApi(): Promise<string> {
+export function getDeviceMacForWelcomeApi(): Promise<string> {
+  if (!_macPromise) {
+    _macPromise = _resolveDeviceMac();
+  }
+  return _macPromise;
+}
+
+async function _resolveDeviceMac(): Promise<string> {
   const t0 = Date.now();
 
   const override = WELCOME_DEVICE_MAC_OVERRIDE.trim();

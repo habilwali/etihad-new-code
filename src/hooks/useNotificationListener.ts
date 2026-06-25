@@ -1,10 +1,26 @@
 import { useEffect, useRef } from 'react';
 import { useNotifications } from '../context/NotificationContext';
-import { CMS_NOTIFICATIONS_REST_URL } from '../config/cmsEndpoints';
+import type { NotificationAttachment } from '../context/NotificationContext';
+import { buildCmsNotificationsUrl } from '../config/cmsEndpoints';
 import { logCmsNetworkErrorOnce } from '../utils/networkErrorLog';
 import { subscribeCmsWebSocket } from '../services/cmsWebSocket';
+import { getDeviceMacForWelcomeApi } from '../utils/getDeviceMacForWelcome';
 
 const POLL_MS = 20_000; // 20s poll — reduces re-renders, refreshFromApi skips when unchanged
+
+/** Safely parse the `attachment` object from a raw notification payload field. */
+function parseAttachment(raw: unknown): NotificationAttachment | undefined {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined;
+  const a = raw as Record<string, unknown>;
+  const url = typeof a.url === 'string' ? a.url.trim() : '';
+  if (!url) return undefined;
+  return {
+    url,
+    name: typeof a.name === 'string' ? a.name.trim() : url.split('/').pop() ?? '',
+    mime: typeof a.mime === 'string' ? a.mime.trim() : 'application/octet-stream',
+    size: typeof a.size === 'number' ? a.size : 0,
+  };
+}
 
 export const useNotificationListener = (enabled = true) => {
   const { addNotification, refreshFromApi } = useNotifications();
@@ -15,11 +31,15 @@ export const useNotificationListener = (enabled = true) => {
 
   useEffect(() => {
     if (!enabled) return;
+    let alive = true;
     let pollInterval: ReturnType<typeof setInterval> | null = null;
 
+    let pollUrl = '';
+
     const fetchHistory = async () => {
+      if (!pollUrl) return; // MAC not yet resolved
       try {
-        const res = await fetch(CMS_NOTIFICATIONS_REST_URL);
+        const res = await fetch(pollUrl);
         const data = await res.json();
         const list = Array.isArray(data) ? data : data?.list ?? data?.data ?? data?.notifications ?? [];
         const parsed = list.map((n: Record<string, unknown>) => ({
@@ -28,10 +48,11 @@ export const useNotificationListener = (enabled = true) => {
           message: String(n.message ?? n.body ?? ''),
           createdAt: String(n.createdAt ?? n.created_at ?? n.date ?? new Date().toISOString()),
           seen: Boolean(n.seen ?? n.read ?? false),
+          attachment: parseAttachment(n.attachment),
         }));
         if (parsed.length) refreshRef.current(parsed);
       } catch (e) {
-        logCmsNetworkErrorOnce('[NotificationListener]', e, CMS_NOTIFICATIONS_REST_URL);
+        logCmsNetworkErrorOnce('[NotificationListener]', e, pollUrl);
       }
     };
 
@@ -45,7 +66,8 @@ export const useNotificationListener = (enabled = true) => {
           const title = String(item?.title ?? payload?.title ?? 'Notification');
           const message = String(item?.message ?? payload?.message ?? item?.body ?? '');
           const createdAt = String(item?.createdAt ?? payload?.createdAt ?? new Date().toISOString());
-          addRef.current({ id, title, message, createdAt });
+          const attachment = parseAttachment(item?.attachment ?? payload?.attachment);
+          addRef.current({ id, title, message, createdAt, attachment });
         }
       } catch (e) {
         if (__DEV__) console.warn('[NotificationListener] parse error', e);
@@ -61,7 +83,12 @@ export const useNotificationListener = (enabled = true) => {
       }, POLL_MS);
     };
 
-    ensurePolling();
+    // Resolve MAC once (shared cached promise), then start MAC-aware polling.
+    getDeviceMacForWelcomeApi().then(mac => {
+      if (!alive) return;
+      pollUrl = buildCmsNotificationsUrl(mac);
+      ensurePolling();
+    });
 
     const unsubWs = subscribeCmsWebSocket({
       onMessage: handlePayload,
@@ -71,6 +98,7 @@ export const useNotificationListener = (enabled = true) => {
     });
 
     return () => {
+      alive = false;
       unsubWs();
       if (pollInterval !== null) {
         clearInterval(pollInterval);

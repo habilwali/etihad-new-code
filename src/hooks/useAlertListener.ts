@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react';
 import type { AlertSeverity } from '../context/EmergencyAlertContext';
 import { useEmergencyAlert } from '../context/EmergencyAlertContext';
-import { CMS_ALERT_POLL_URL } from '../config/cmsEndpoints';
+import { buildCmsAlertPollUrl } from '../config/cmsEndpoints';
 import { logCmsNetworkErrorOnce } from '../utils/networkErrorLog';
-import { subscribeCmsWebSocket } from '../services/cmsWebSocket';
+import { subscribeCmsWebSocket, setCmsDeviceMac } from '../services/cmsWebSocket';
+import { getDeviceMacForWelcomeApi } from '../utils/getDeviceMacForWelcome';
 
 const POLL_MS = 5_000;
 
@@ -52,6 +53,7 @@ export const useAlertListener = (enabled = true) => {
 
   useEffect(() => {
     if (!enabled) return;
+    let alive = true;
     let pollInterval: ReturnType<typeof setInterval> | null = null;
 
     const handlePayload = (raw: string) => {
@@ -111,9 +113,14 @@ export const useAlertListener = (enabled = true) => {
       }
     };
 
+    // pollUrl is set once MAC resolves; guarded by `alive` in case the effect
+    // is cleaned up before the async probe finishes.
+    let pollUrl = '';
+
     const doPoll = async () => {
+      if (!pollUrl) return; // MAC not yet resolved
       try {
-        const res = await fetch(CMS_ALERT_POLL_URL);
+        const res = await fetch(pollUrl);
         const data = (await res.json()) as Record<string, unknown>;
         const merged = mergeAlertEnvelope(data);
 
@@ -126,7 +133,7 @@ export const useAlertListener = (enabled = true) => {
 
         handlePayload(JSON.stringify(merged));
       } catch (e) {
-        logCmsNetworkErrorOnce('[AlertListener]', e, CMS_ALERT_POLL_URL);
+        logCmsNetworkErrorOnce('[AlertListener]', e, pollUrl);
       }
     };
 
@@ -138,7 +145,15 @@ export const useAlertListener = (enabled = true) => {
       }, POLL_MS);
     };
 
-    ensurePolling();
+    // Resolve MAC once (cached after first call), then start MAC-aware polling and
+    // update the shared WebSocket URL so the server can filter per-tenant messages.
+    getDeviceMacForWelcomeApi().then(mac => {
+      if (!alive) return;
+      pollUrl = buildCmsAlertPollUrl(mac);
+      // Inform the shared WS singleton so it reconnects with ?mac= if needed.
+      setCmsDeviceMac(mac);
+      ensurePolling();
+    });
 
     const unsubWs = subscribeCmsWebSocket({
       onMessage: handlePayload,
@@ -148,6 +163,7 @@ export const useAlertListener = (enabled = true) => {
     });
 
     return () => {
+      alive = false;
       unsubWs();
       if (pollInterval !== null) {
         clearInterval(pollInterval);
