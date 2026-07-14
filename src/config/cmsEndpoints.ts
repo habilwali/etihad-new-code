@@ -5,9 +5,9 @@
  * Full origin override (https or custom path):
  *   HOTEL_CMS_BASE_URL e.g. https://my-server.com
  */
-const CMS_HOST = process.env.HOTEL_CMS_HOST ?? '10.10.120.11';
+const CMS_HOST = process.env.HOTEL_CMS_HOST ?? '192.168.2.226';
 
-const CMS_HTTP_PORT = process.env.HOTEL_CMS_HTTP_PORT ?? '80';
+const CMS_HTTP_PORT = process.env.HOTEL_CMS_HTTP_PORT ?? '8082';
 
 /** CMS HTTP origin without trailing slash (same host/port as index.php APIs). */
 export function getCmsHttpOrigin(): string {

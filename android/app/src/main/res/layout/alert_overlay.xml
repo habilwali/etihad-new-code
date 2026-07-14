@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  alert_overlay.xml
+  Full-screen overlay shown by AlertOverlayService when an emergency alert
+  or notification arrives — even while another app (YouTube, browser) is open.
+-->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#CC000000">
+
+    <!-- Centered card -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="60dp"
+        android:orientation="vertical"
+        android:background="@drawable/alert_card_bg"
+        android:padding="32dp"
+        android:elevation="8dp">
+
+        <!-- Gold top accent bar -->
+        <View
+            android:layout_width="48dp"
+            android:layout_height="3dp"
+            android:background="#C8AA7F"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Alert icon + title row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚠"
+                android:textSize="24sp"
+                android:textColor="#C8AA7F"
+                android:layout_marginEnd="12dp" />
+
+            <TextView
+                android:id="@+id/alert_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Alert"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#33C8AA7F"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Message body -->
+        <TextView
+            android:id="@+id/alert_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#E0E0E0"
+            android:textSize="16sp"
+            android:lineSpacingMultiplier="1.4"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Footer: timer + dismiss button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/alert_timer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Dismissing in 30 s"
+                android:textColor="#88FFFFFF"
+                android:textSize="12sp"
+                android:letterSpacing="0.08" />
+
+            <ImageButton
+                android:id="@+id/alert_dismiss"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/alert_dismiss_bg"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:contentDescription="Dismiss"
+                android:padding="12dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

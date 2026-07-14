@@ -19,6 +19,8 @@ class MainApplication : Application(), ReactApplication {
         override fun getPackages(): List<ReactPackage> =
             PackageList(this).packages.apply {
               add(HardwareMacPackage())
+              // Background alert overlay (disabled)
+              // add(AlertOverlayPackage())
             }
 
         override fun getJSMainModuleName(): String = "index"

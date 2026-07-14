@@ -9,6 +9,13 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
 
+    <!-- Background alert overlay service (disabled)
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    -->
+
     <!--
       Android TV REQUIRED declarations.
       Without these, the OS never enters TV input mode and all D-pad / remote
@@ -60,6 +67,24 @@
         </intent-filter>
 
       </activity>
+
+      <!-- Background alert overlay (disabled)
+      <service
+          android:name=".AlertOverlayService"
+          android:exported="false"
+          android:foregroundServiceType="dataSync"
+          android:stopWithTask="false" />
+
+      <receiver
+          android:name=".BootReceiver"
+          android:exported="true"
+          android:enabled="true">
+          <intent-filter>
+              <action android:name="android.intent.action.BOOT_COMPLETED" />
+              <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+          </intent-filter>
+      </receiver>
+      -->
 
       <!-- FileProvider: needed so the package installer can access the downloaded APK -->
       <provider

@@ -35,6 +35,10 @@ import {
   startPrefetchEtihadChannelList,
   startPrefetchIptvTvChannels,
 } from './src/services/channelListsPrefetch';
+// ── Background alert overlay (disabled) ──────────────────────────────────────
+// import AlertOverlayService from './src/native/AlertOverlayService';
+// import {getCmsHttpOrigin} from './src/config/cmsEndpoints';
+// import {getDeviceMacForWelcomeApi} from './src/utils/getDeviceMacForWelcome';
 
 // Diagnostic: log every hardware key received from the physical remote.
 function useDiagnosticKeyLog() {
@@ -182,6 +186,21 @@ function AppContent(): React.JSX.Element {
     startPrefetchIptvTvChannels();
     startPrefetchEtihadChannelList();
   }, []);
+
+  // ── Background alert overlay (disabled) ────────────────────────────────────
+  // Starts AlertOverlayService so alerts show when app is closed or another app
+  // is in foreground. Re-enable when testing feature/background-alert-overlay.
+  // useEffect(() => {
+  //   const origin = getCmsHttpOrigin(); // e.g. "http://10.10.120.11:80"
+  //   const match  = origin.match(/^https?:\/\/([^:/]+)(?::(\d+))?/);
+  //   const host   = match?.[1] ?? '10.10.120.11';
+  //   const port   = match?.[2] ?? '80';
+  //   getDeviceMacForWelcomeApi().then(mac => {
+  //     AlertOverlayService.startService(host, port, mac);
+  //   }).catch(() => {
+  //     AlertOverlayService.startService(host, port, '');
+  //   });
+  // }, []);
 
   const commonProps = {
     guestName: welcomeGuest.guestName,
