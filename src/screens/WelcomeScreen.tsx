@@ -44,7 +44,7 @@ export interface WelcomeScreenProps {
   welcomeMessage?: string;
   /** From Welcome API `signature_title` (optional line under subtitle). */
   signatureTitle?: string;
-  /** Shown on bottom bar, e.g. "Room NO: 101" or "Room NO: —". */
+  /** Shown on bottom bar, e.g. "Apartment NO: 101" or "Apartment NO: —". */
   roomNavLabel?: string;
   /** Optional overrides; omit for live Open-Meteo weather in the header. */
   temperature?: number;
@@ -60,13 +60,13 @@ export interface WelcomeScreenProps {
 // ─── Default nav items (order as per spec) ───────────────────────────────────
 const DEFAULT_NAV_ITEMS: NavItemData[] = [
   { id: '1', icon: 'health', label: 'Occupational\nHealth & Safety' },
-  { id: '2', icon: 'dining', label: 'Dining' },
+  { id: '8', icon: 'notifications', label: 'Messages' },
   { id: '3', icon: 'cart', label: 'Hypermarket' },
   { id: '4', icon: 'plaza', label: 'EY Plaza' },
   { id: '5', icon: 'facilities', label: 'Etihad\nFacilities' },
   { id: '6', icon: 'channel', label: 'Etihad\nChannel' },
   { id: '7', icon: 'tv', label: 'TV Channel' },
-  { id: '8', icon: 'notifications', label: 'Messages' },
+  { id: '2', icon: 'dining', label: 'Dining' },
 ];
 
 // ─── Colors (Etihad brand — primary gold ~50%, secondary ~30%) ───────────────
@@ -273,7 +273,7 @@ const BottomNavBar = React.memo(function BottomNavBar({
   activeIndex,
   focusedIndex,
   messageCount,
-  roomNavLabel = 'Room NO: —',
+  roomNavLabel = 'Apartment NO: —',
   onSelectIndex,
   onFocusIndex,
   onNavItemPress,
@@ -323,7 +323,7 @@ const BottomNavBar = React.memo(function BottomNavBar({
 
   return (
     <View style={styles.bottomNavBar}>
-      {/* Room number — top left */}
+      {/* Apartment number — top left */}
       <Text style={styles.roomNoText}>{roomNavLabel}</Text>
       {/* Left arrow — aligned with nav icon row */}
       <TouchableHighlight
@@ -376,7 +376,7 @@ export default function WelcomeScreen({
   guestName = 'Guest',
   welcomeMessage = 'Welcome',
   signatureTitle,
-  roomNavLabel = 'Room NO: —',
+  roomNavLabel = 'Apartment NO: —',
   temperature: temperatureProp,
   weatherCondition: weatherConditionProp,
   activeNavIndex = 3,

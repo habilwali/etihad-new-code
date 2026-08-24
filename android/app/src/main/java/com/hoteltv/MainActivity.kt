@@ -9,7 +9,7 @@ import com.github.kevinejohn.keyevent.KeyEventModule
 
 class MainActivity : ReactActivity() {
 
-  override fun getMainComponentName(): String = "Etihad Plaza Hotel"
+  override fun getMainComponentName(): String = "Etihad Plaza CPA"
 
   override fun createReactActivityDelegate(): ReactActivityDelegate =
       DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)

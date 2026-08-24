@@ -5,7 +5,7 @@
  * Full origin override (https or custom path):
  *   HOTEL_CMS_BASE_URL e.g. https://my-server.com
  */
-const CMS_HOST = process.env.HOTEL_CMS_HOST ?? '10.10.120.11';
+const CMS_HOST = process.env.HOTEL_CMS_HOST ?? '100.101.88.36';
 
 const CMS_HTTP_PORT = process.env.HOTEL_CMS_HTTP_PORT ?? '80';
 
@@ -212,6 +212,14 @@ export function buildCmsNotificationsUrl(mac: string): string {
   const m = mac.trim();
   if (!m) return base;
   return `${base}&mac=${encodeURIComponent(normalizeDeviceMac(m))}`;
+}
+
+/**
+ * Report that this TV has seen an emergency alert or notification.
+ * POST JSON `{ id, mac }` — admin Viewing History uses this for Seen counts.
+ */
+export function buildCmsSeenUrl(): string {
+  return `${getCmsHttpOrigin()}/emergency-alerts/index.php?api=seen`;
 }
 
 // ---------------------------------------------------------------------------

@@ -260,6 +260,11 @@ interface DetailPanelProps {
   onOpenAttachment: (url: string, mime: string, name: string) => void;
   downloadingUrl: string | null;
   focusedActionIndex?: number;
+  bodyFocused?: boolean;
+  scrollRef: React.RefObject<ScrollView>;
+  onDetailScroll: (y: number) => void;
+  onDetailContentSizeChange: (height: number) => void;
+  onDetailScrollLayout: (height: number) => void;
 }
 
 const DetailPanel: React.FC<DetailPanelProps> = ({
@@ -268,6 +273,11 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
   onOpenAttachment,
   downloadingUrl,
   focusedActionIndex = -1,
+  bodyFocused = false,
+  scrollRef,
+  onDetailScroll,
+  onDetailContentSizeChange,
+  onDetailScrollLayout,
 }) => {
   if (!notification) {
     return (
@@ -307,7 +317,16 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
       <View style={styles.divider} />
 
       {/* ── Scrollable body ── */}
-      <ScrollView style={styles.detailScroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        ref={scrollRef}
+        style={[styles.detailScroll, bodyFocused && styles.detailScrollFocused]}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        nestedScrollEnabled
+        onScroll={(e) => onDetailScroll(e.nativeEvent.contentOffset.y)}
+        onContentSizeChange={(_, h) => onDetailContentSizeChange(h)}
+        onLayout={(e) => onDetailScrollLayout(e.nativeEvent.layout.height)}
+      >
         {n.thumbColor && (
           <View style={[styles.thumb, { backgroundColor: n.thumbColor }]}>
             <View style={styles.thumbPlay}>
@@ -896,7 +915,9 @@ const KEYCODES = { BACK: 4, DPAD_UP: 19, DPAD_DOWN: 20, DPAD_LEFT: 21, DPAD_RIGH
 const KEY_THROTTLE_MS = 130; // Prevents rapid key repeat from causing jittery navigation when holding D-pad
 const SIDEBAR_HEADER_H = 140;
 const ITEM_H = { section: 36, notif: 92 };
+const DETAIL_SCROLL_STEP = 120;
 type NavZone = 'filters' | 'list' | 'detail';
+type DetailSubZone = 'body' | 'actions';
 
 export interface NotificationScreenProps {
   isActive: boolean;
@@ -909,11 +930,14 @@ const NotificationScreen: React.FC<NotificationScreenProps> = ({ isActive, onBac
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterType>('all');
   const [navZone, setNavZone] = useState<NavZone>('filters');
+  const [detailSubZone, setDetailSubZone] = useState<DetailSubZone>('body');
   const [filterIdx, setFilterIdx] = useState(0);
   const [listIdx, setListIdx] = useState(0);
   const [detailIdx, setDetailIdx] = useState(0);
   const listRef = useRef<FlatList>(null);
+  const detailScrollRef = useRef<ScrollView>(null);
   const navZoneRef = useRef<NavZone>(navZone);
+  const detailSubZoneRef = useRef<DetailSubZone>(detailSubZone);
   const filterIdxRef = useRef(filterIdx);
   const listIdxRef = useRef(listIdx);
   const detailIdxRef = useRef(detailIdx);
@@ -1039,6 +1063,7 @@ const NotificationScreen: React.FC<NotificationScreenProps> = ({ isActive, onBac
   handleActionRef.current = handleAction;
   handleOpenAttachmentRef.current = handleOpenAttachment;
   navZoneRef.current = navZone;
+  detailSubZoneRef.current = detailSubZone;
   filterIdxRef.current = filterIdx;
   listIdxRef.current = listIdx;
   detailIdxRef.current = detailIdx;
@@ -1046,6 +1071,41 @@ const NotificationScreen: React.FC<NotificationScreenProps> = ({ isActive, onBac
   const lastKeyRef = useRef<{ keyCode: number; time: number }>({ keyCode: -1, time: 0 });
   const scrollOffsetRef = useRef(0);   // updated by FlatList onScroll
   const listHeightRef = useRef(600);   // updated by FlatList onLayout
+  const detailScrollYRef = useRef(0);
+  const detailScrollContentRef = useRef(0);
+  const detailScrollViewportRef = useRef(0);
+  const detailScrollMaxRef = useRef(0);
+
+  const updateDetailScrollMax = useCallback(() => {
+    detailScrollMaxRef.current = Math.max(
+      0,
+      detailScrollContentRef.current - detailScrollViewportRef.current,
+    );
+  }, []);
+
+  const resetDetailScroll = useCallback(() => {
+    detailScrollYRef.current = 0;
+    requestAnimationFrame(() => {
+      detailScrollRef.current?.scrollTo({ y: 0, animated: false });
+    });
+  }, []);
+
+  const scrollDetailBy = useCallback((delta: number) => {
+    const max = detailScrollMaxRef.current;
+    const nextY = Math.min(max, Math.max(0, detailScrollYRef.current + delta));
+    if (nextY === detailScrollYRef.current) return nextY;
+    detailScrollYRef.current = nextY;
+    detailScrollRef.current?.scrollTo({ y: nextY, animated: true });
+    return nextY;
+  }, []);
+
+  useEffect(() => {
+    resetDetailScroll();
+    detailSubZoneRef.current = 'body';
+    setDetailSubZone('body');
+    detailIdxRef.current = 0;
+    setDetailIdx(0);
+  }, [selectedId, resetDetailScroll]);
 
   const scrollToListIndex = useCallback((index: number) => {
     const idx = notifIndicesRef.current[index];
@@ -1169,9 +1229,11 @@ const NotificationScreen: React.FC<NotificationScreenProps> = ({ isActive, onBac
             listIdxRef.current = 0;
             setListIdx(0);
             scrollToListIndex(0);
-          } else if (selNotif && dCount > 0) {
+          } else if (selNotif) {
             navZoneRef.current = 'detail';
             setNavZone('detail');
+            detailSubZoneRef.current = 'body';
+            setDetailSubZone('body');
             detailIdxRef.current = 0;
             setDetailIdx(0);
           }
@@ -1202,34 +1264,83 @@ const NotificationScreen: React.FC<NotificationScreenProps> = ({ isActive, onBac
             setListIdx(next);
             scrollToListIndex(next);
           }
-        } else if (kc === KEYCODES.DPAD_RIGHT && selNotif && dCount > 0) {
+        } else if (kc === KEYCODES.DPAD_RIGHT && selNotif) {
           navZoneRef.current = 'detail';
           setNavZone('detail');
+          detailSubZoneRef.current = 'body';
+          setDetailSubZone('body');
           detailIdxRef.current = 0;
           setDetailIdx(0);
         } else if (kc === KEYCODES.ENTER || kc === KEYCODES.SELECT) {
           const idx = indices[lIdx];
           if (idx != null && idx >= 0 && idx < data.length) {
             const item = data[idx];
-            if (item && !('type' in item)) handleSelectRef.current?.((item as DisplayNotification).id);
+            if (item && !('type' in item)) {
+              handleSelectRef.current?.((item as DisplayNotification).id);
+              navZoneRef.current = 'detail';
+              setNavZone('detail');
+              detailSubZoneRef.current = 'body';
+              setDetailSubZone('body');
+              detailIdxRef.current = 0;
+              setDetailIdx(0);
+            }
           }
         }
         return;
       }
 
       if (zone === 'detail' && selNotif) {
+        const sub = detailSubZoneRef.current;
+        const atTop = detailScrollYRef.current <= 0;
+        const atBottom = detailScrollYRef.current >= detailScrollMaxRef.current - 4;
+
+        if (sub === 'body') {
+          if (kc === KEYCODES.DPAD_LEFT) {
+            navZoneRef.current = 'list';
+            setNavZone('list');
+          } else if (kc === KEYCODES.DPAD_UP) {
+            if (!atTop) {
+              scrollDetailBy(-DETAIL_SCROLL_STEP);
+            } else if (nCount > 0) {
+              navZoneRef.current = 'list';
+              setNavZone('list');
+            }
+          } else if (kc === KEYCODES.DPAD_DOWN) {
+            if (!atBottom) {
+              scrollDetailBy(DETAIL_SCROLL_STEP);
+            } else if (dCount > 0) {
+              detailSubZoneRef.current = 'actions';
+              setDetailSubZone('actions');
+              detailIdxRef.current = 0;
+              setDetailIdx(0);
+            }
+          } else if (kc === KEYCODES.DPAD_RIGHT && dCount > 0) {
+            detailSubZoneRef.current = 'actions';
+            setDetailSubZone('actions');
+            detailIdxRef.current = 0;
+            setDetailIdx(0);
+          }
+          return;
+        }
+
         if (kc === KEYCODES.DPAD_LEFT) {
           if (dIdx > 0) {
             const prev = Math.max(0, dIdx - 1);
             detailIdxRef.current = prev;
             setDetailIdx(prev);
           } else {
-            navZoneRef.current = 'list';
-            setNavZone('list');
+            detailSubZoneRef.current = 'body';
+            setDetailSubZone('body');
           }
-        } else if (kc === KEYCODES.DPAD_UP && nCount > 0) {
-          navZoneRef.current = 'list';
-          setNavZone('list');
+        } else if (kc === KEYCODES.DPAD_UP) {
+          detailSubZoneRef.current = 'body';
+          setDetailSubZone('body');
+        } else if (kc === KEYCODES.DPAD_DOWN) {
+          if (!atBottom) {
+            detailSubZoneRef.current = 'body';
+            setDetailSubZone('body');
+            scrollDetailBy(DETAIL_SCROLL_STEP);
+          }
         } else if (kc === KEYCODES.DPAD_RIGHT) {
           const next = Math.min(dCount - 1, dIdx + 1);
           detailIdxRef.current = next;
@@ -1248,7 +1359,7 @@ const NotificationScreen: React.FC<NotificationScreenProps> = ({ isActive, onBac
       }
     });
     return () => sub.remove();
-  }, [isActive, scrollToListIndex]);
+  }, [isActive, scrollToListIndex, scrollDetailBy]);
 
   const ListHeader = () => (
     <View style={styles.sidebarHeader}>
@@ -1351,7 +1462,18 @@ const NotificationScreen: React.FC<NotificationScreenProps> = ({ isActive, onBac
               onAction={handleAction}
               onOpenAttachment={handleOpenAttachment}
               downloadingUrl={downloadingUrl}
-              focusedActionIndex={navZone === 'detail' ? detailIdx : -1}
+              focusedActionIndex={navZone === 'detail' && detailSubZone === 'actions' ? detailIdx : -1}
+              bodyFocused={navZone === 'detail' && detailSubZone === 'body'}
+              scrollRef={detailScrollRef}
+              onDetailScroll={(y) => { detailScrollYRef.current = y; }}
+              onDetailContentSizeChange={(h) => {
+                detailScrollContentRef.current = h;
+                updateDetailScrollMax();
+              }}
+              onDetailScrollLayout={(h) => {
+                detailScrollViewportRef.current = h;
+                updateDetailScrollMax();
+              }}
             />
           </View>
         </View>
@@ -1603,6 +1725,11 @@ const styles = StyleSheet.create({
   detailScroll: {
     flex: 1,
   },
+  detailScrollFocused: {
+    borderWidth: 1,
+    borderColor: Colors.overlay.gold[35],
+    borderRadius: 8,
+  },
   detailHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -1710,7 +1837,7 @@ const styles = StyleSheet.create({
   detailBody: {
     fontFamily: FontFamily.book,
     fontSize: 15,
-    color: Colors.text.muted,
+    color: Colors.text.light,
     lineHeight: 24,
     marginBottom: 24,
   },
