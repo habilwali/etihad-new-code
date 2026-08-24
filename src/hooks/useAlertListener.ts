@@ -44,17 +44,75 @@ function normalizeSeverity(v: unknown): AlertSeverity {
   return 'info';
 }
 
+/** Stable id when CMS omits one — same title+message = same id across polls. */
+function buildAlertId(payload: Record<string, unknown>, title: string, message: string): string {
+  const raw = payload.id ?? payload.alert_id ?? payload.notification_id;
+  if (raw != null && String(raw).trim() !== '' && String(raw).trim() !== 'alert') {
+    return String(raw).trim();
+  }
+  // Content hash fallback (same idea as overlay service) so user dismiss sticks across polls.
+  let h = 0;
+  const key = `${title}|${message}`;
+  for (let i = 0; i < key.length; i++) {
+    h = (h * 31 + key.charCodeAt(i)) | 0;
+  }
+  return `alert-${h}`;
+}
+
+/** Prefer CMS `id` / `alert_id` for admin Seen reporting. */
+function cmsReportId(payload: Record<string, unknown>, fallbackId: string): string {
+  const raw = payload.id ?? payload.alert_id ?? payload.notification_id;
+  if (raw != null && String(raw).trim() !== '') {
+    return String(raw).trim();
+  }
+  return fallbackId;
+}
+
+/**
+ * If CMS includes a non-empty targetMacs / target_macs list, only show when this device
+ * is listed. Empty / missing list = broadcast to all.
+ */
+function isTargetedToThisMac(
+  payload: Record<string, unknown>,
+  deviceMac: string,
+): boolean {
+  const raw =
+    payload.targetMacs ??
+    payload.target_macs ??
+    payload.targetMac ??
+    payload.macs;
+  if (raw == null) {
+    return true;
+  }
+  const list: string[] = Array.isArray(raw)
+    ? raw.map(String)
+    : typeof raw === 'string' && raw.trim()
+    ? [raw]
+    : [];
+  if (list.length === 0) {
+    return true;
+  }
+  if (!deviceMac) {
+    return false;
+  }
+  const mac = deviceMac.trim().toUpperCase();
+  return list.some(m => String(m).trim().toUpperCase() === mac);
+}
+
 export const useAlertListener = (enabled = true) => {
-  const { showAlert, dismissAlert } = useEmergencyAlert();
+  const { showAlert, hideAlert, isAlertDismissed } = useEmergencyAlert();
   const showRef = useRef(showAlert);
-  const dismissRef = useRef(dismissAlert);
+  const hideRef = useRef(hideAlert);
+  const isDismissedRef = useRef(isAlertDismissed);
   showRef.current = showAlert;
-  dismissRef.current = dismissAlert;
+  hideRef.current = hideAlert;
+  isDismissedRef.current = isAlertDismissed;
 
   useEffect(() => {
     if (!enabled) return;
     let alive = true;
     let pollInterval: ReturnType<typeof setInterval> | null = null;
+    let deviceMac = '';
 
     const handlePayload = (raw: string) => {
       try {
@@ -93,12 +151,26 @@ export const useAlertListener = (enabled = true) => {
         if (__DEV__) console.log('[AlertListener]', { typeNorm, active, isDismiss, shouldShow });
 
         if (isDismiss) {
-          dismissRef.current();
+          // CMS cleared the alert — hide UI only; do not touch user-dismiss memory.
+          hideRef.current();
         } else if (shouldShow) {
+          // Do not show (or report seen) when this TV is outside targetMacs.
+          if (!isTargetedToThisMac(payload, deviceMac)) {
+            if (__DEV__) {
+              console.log('[AlertListener] skip — not targeted to this MAC', deviceMac);
+            }
+            return;
+          }
           const title = String(payload.title ?? payload.headline ?? payload.subject ?? 'Alert');
           const message = String(payload.message ?? payload.body ?? payload.text ?? '');
+          const id = buildAlertId(payload, title, message);
+          // Skip if user already dismissed this alert from the remote.
+          if (isDismissedRef.current(id)) {
+            return;
+          }
           showRef.current({
-            id: String(payload.id ?? payload.alert_id ?? 'alert'),
+            id,
+            reportId: cmsReportId(payload, id),
             title,
             message,
             severity: normalizeSeverity(payload.severity ?? payload.level),
@@ -149,6 +221,7 @@ export const useAlertListener = (enabled = true) => {
     // update the shared WebSocket URL so the server can filter per-tenant messages.
     getDeviceMacForWelcomeApi().then(mac => {
       if (!alive) return;
+      deviceMac = mac;
       pollUrl = buildCmsAlertPollUrl(mac);
       // Inform the shared WS singleton so it reconnects with ?mac= if needed.
       setCmsDeviceMac(mac);

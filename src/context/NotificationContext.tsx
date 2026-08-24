@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { reportCmsSeenOnce } from '../services/cmsSeenApi';
 
 export interface NotificationAttachment {
   url: string;
@@ -88,11 +89,16 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, []);
 
   const markAsSeen = useCallback((id: string) => {
+    const wasAlreadySeen = seenIdsRef.current.has(id);
     seenIdsRef.current.add(id);
     persistSeenIds();
     setNotificationsState((prev) =>
       prev.map((n) => (n.id === id ? { ...n, seen: true } : n))
     );
+    // First time this device opens/shows the notification — tell CMS admin.
+    if (!wasAlreadySeen && id) {
+      reportCmsSeenOnce(id);
+    }
   }, [persistSeenIds]);
 
   const markAllAsSeen = useCallback(() => {

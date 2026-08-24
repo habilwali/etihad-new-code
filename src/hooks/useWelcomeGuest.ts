@@ -111,7 +111,7 @@ export function useWelcomeGuest(enabled: boolean) {
     state.status === 'ready' && state.source === 'api' ? state.data.signatureTitle : undefined;
 
   const roomNavLabel =
-    roomNumber && roomNumber.length > 0 ? `Room NO: ${roomNumber}` : 'Room NO: —';
+    roomNumber && roomNumber.length > 0 ? `Apartment NO: ${roomNumber}` : 'Apartment NO: —';
 
   const loading = state.status === 'loading';
 
