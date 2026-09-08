@@ -591,7 +591,7 @@ export default function EtihadPlazaScreen({
           weatherCondition={headerClock.weatherCondition}
         />
         <View style={s.loadingOverlayBody}>
-          <Text style={s.errorStateTitle}>Unable to load Etihad Plaza</Text>
+          <Text style={s.errorStateTitle}>Unable to load Explore Sharjah</Text>
           <Text style={s.errorStateBody}>{errorMsg || 'Unknown error'}</Text>
           <TouchableOpacity
             onPress={() => setReloadToken(t => t + 1)}
@@ -1197,10 +1197,15 @@ const s = StyleSheet.create({
   heroContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    paddingHorizontal: 40,
+    marginHorizontal: 28,
+    paddingHorizontal: 28,
     paddingTop: 24,
-    paddingBottom: 0,
+    paddingBottom: 24,
     gap: 36,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: Colors.overlay.gold[20],
   },
   heroLeft: {width: SW * 0.48},
   heroPreviewCard: {
@@ -1230,7 +1235,7 @@ const s = StyleSheet.create({
     fontFamily: FontFamily.book,
     fontSize: 13,
     lineHeight: 18,
-    color: C.text,
+    color: Colors.white,
     marginBottom: 5,
   },
   liveRow: {flexDirection: 'row', alignItems: 'center', gap: 7},
@@ -1249,15 +1254,15 @@ const s = StyleSheet.create({
     lineHeight: 60,
     marginBottom: 16,
     letterSpacing: 0.2,
-    textShadowColor: 'rgba(0,0,0,0.85)',
-    textShadowOffset: {width: 0, height: 2},
-    textShadowRadius: 6,
+    textShadowColor: 'transparent',
+    textShadowOffset: {width: 0, height: 0},
+    textShadowRadius: 0,
   },
   heroTitleGold: {
     color: C.gold,
-    textShadowColor: 'rgba(0,0,0,0.9)',
-    textShadowOffset: {width: 0, height: 2},
-    textShadowRadius: 6,
+    textShadowColor: 'transparent',
+    textShadowOffset: {width: 0, height: 0},
+    textShadowRadius: 0,
   },
   heroDesc: {
     fontFamily: FontFamily.book,
@@ -1265,9 +1270,9 @@ const s = StyleSheet.create({
     lineHeight: 15,
     color: C.goldLight,
     marginBottom: 32,
-    textShadowColor: 'rgba(0,0,0,0.95)',
-    textShadowOffset: {width: 0, height: 1},
-    textShadowRadius: 5,
+    textShadowColor: 'transparent',
+    textShadowOffset: {width: 0, height: 0},
+    textShadowRadius: 0,
   },
   heroBtns: {flexDirection: 'row', gap: 14},
   btnGold: {paddingHorizontal: 28, paddingVertical: 13},
@@ -1304,12 +1309,14 @@ const s = StyleSheet.create({
   statsBar: {
     position: 'absolute',
     bottom: 0,
-    left: 0,
-    right: 0,
+    left: 28,
+    right: 28,
     flexDirection: 'row',
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(255,255,255,0.94)',
     borderTopWidth: 1,
     borderTopColor: C.border,
+    borderBottomLeftRadius: 14,
+    borderBottomRightRadius: 14,
   },
   statItem: {flex: 1, paddingVertical: 18, alignItems: 'center'},
   statBorder: {borderRightWidth: 1, borderRightColor: C.sep},
@@ -1336,10 +1343,13 @@ const s = StyleSheet.create({
   },
 
   section: {
-    paddingHorizontal: 44,
-    paddingTop: 36,
-    paddingBottom: 0,
-    backgroundColor: 'transparent',
+    marginHorizontal: 28,
+    marginBottom: 16,
+    paddingHorizontal: 32,
+    paddingTop: 28,
+    paddingBottom: 18,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderRadius: 14,
     borderBottomWidth: 1,
     borderBottomColor: Colors.overlay.gold[14],
   },

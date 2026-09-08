@@ -48,7 +48,7 @@ const C = {
   muted: Colors.text.muted,
 };
 
-const TAB_BAR_BG = 'rgba(40,52,62,0.88)';
+const TAB_BAR_BG = 'rgba(255,255,255,0.94)';
 
 type Section = 'categories' | 'sidebar';
 
@@ -763,7 +763,7 @@ const st = StyleSheet.create({
   goldRule: {height: 1},
   catNavBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: 'rgba(168,122,43,0.14)',
     backgroundColor: TAB_BAR_BG,
   },
   catNav: {backgroundColor: TAB_BAR_BG},
@@ -797,7 +797,7 @@ const st = StyleSheet.create({
   sidebar: {
     width: SIDEBAR_W,
     borderRightWidth: 1,
-    borderRightColor: 'rgba(255,255,255,0.08)',
+    borderRightColor: 'rgba(168,122,43,0.14)',
     backgroundColor: TAB_BAR_BG,
   },
   sidebarFocused: {borderRightColor: C.gold},
@@ -808,7 +808,7 @@ const st = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 13,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: 'rgba(168,122,43,0.14)',
     backgroundColor: TAB_BAR_BG,
   },
   sidebarHeaderTxt: {

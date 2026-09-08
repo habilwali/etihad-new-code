@@ -474,7 +474,7 @@ export default function CmsIptvChannelsScreen({
     <View style={st.header}>
       <View style={st.brand}>
         <Image
-          source={require('../assets/header/ethiad-logo-marketing.png')}
+          source={require('../assets/copthorne/logo.png')}
           style={st.brandLogo}
           resizeMode="contain"
         />
@@ -627,7 +627,7 @@ export default function CmsIptvChannelsScreen({
         <View style={st.header}>
           <View style={st.brand}>
             <Image
-              source={require('../assets/header/ethiad-logo-marketing.png')}
+              source={require('../assets/copthorne/logo.png')}
               style={st.brandLogo}
               resizeMode="contain"
             />
@@ -872,7 +872,7 @@ const st = StyleSheet.create({
     borderBottomColor: C.border,
   },
   brand: {flexDirection: 'row', alignItems: 'center', gap: 14},
-  brandLogo: {width: 140, height: 45},
+  brandLogo: {width: 150, height: 60},
   headerRight: {flexDirection: 'row', alignItems: 'center', gap: 20},
   clockWrap: {alignItems: 'flex-end'},
   clockTime: {
@@ -930,7 +930,7 @@ const st = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: C.border,
-    backgroundColor: 'rgba(6,6,12,0.75)',
+    backgroundColor: 'rgba(255,255,255,0.94)',
   },
   pkgRowFocused: {
     borderColor: C.gold,
@@ -1020,7 +1020,7 @@ const st = StyleSheet.create({
     width: SIDEBAR_W,
     borderRightWidth: 1,
     borderRightColor: C.border,
-    backgroundColor: 'rgba(6,6,12,0.75)',
+    backgroundColor: 'rgba(255,255,255,0.94)',
   },
   sidebarFocused: {borderRightColor: C.gold},
   sidebarHeader: {
@@ -1155,7 +1155,7 @@ const st = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: C.deep,
+    backgroundColor: '#000',
     justifyContent: 'center',
   },
 });

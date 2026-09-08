@@ -1,10 +1,18 @@
 /**
- * Etihad Airways Plaza — Employee Welcome Screen (1280×720 TV)
- * Single component with all sub-components; pixel-perfect layout.
- * Typography: Etihad Altis (FontFamily) per brand guidelines.
+ * Copthorne Hotel Sharjah — Welcome / Home screen (1280×720 TV).
+ *
+ * Layout follows the approved light Copthorne reference:
+ * - Copthorne brand + weather header
+ * - soft white fade over the API-provided background image
+ * - left-aligned hotel welcome copy
+ * - light glass menu cards with gold line icons
+ * - gold active tile and compact hotel footer
+ *
+ * The background image source and API image-loading mechanism are intentionally
+ * untouched. This screen only adds visual overlays on top of that image.
  */
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   BackHandler,
   DeviceEventEmitter,
@@ -18,21 +26,30 @@ import {
   TouchableHighlight,
   View,
 } from 'react-native';
-import { FontFamily } from '../theme/typography';
-import { Colors } from '../theme/colors';
-import { AppHeader } from '../components/common/AppHeader';
-import { useAppHeaderClock } from '../hooks/useAppHeaderClock';
+import LinearGradient from 'react-native-linear-gradient';
+import {FontFamily} from '../theme/typography';
+import {Colors} from '../theme/colors';
+import {AppHeader} from '../components/common/AppHeader';
+import {useAppHeaderClock} from '../hooks/useAppHeaderClock';
 
-const { width: WINDOW_WIDTH, height: WINDOW_HEIGHT } = Dimensions.get('window');
+const {width: WINDOW_WIDTH, height: WINDOW_HEIGHT} = Dimensions.get('window');
 const DESIGN_WIDTH = 1280;
 const scale = WINDOW_WIDTH / DESIGN_WIDTH;
 const s = (n: number) => Math.round(n * scale);
 
-// ─── Types ─────────────────────────────────────────────────────────────────
 export interface NavItemData {
   id: string;
-  icon: 'health' | 'dining' | 'cart' | 'plaza' | 'facilities' | 'channel' | 'tv' | 'notifications';
-  label: string; // use '\n' for line breaks
+  icon:
+    | 'health'
+    | 'dining'
+    | 'plaza'
+    | 'facilities'
+    | 'tv'
+    | 'notifications'
+    | 'apps'
+    | 'cart'
+    | 'channel';
+  label: string;
 }
 
 export interface WelcomeScreenProps {
@@ -40,186 +57,73 @@ export interface WelcomeScreenProps {
   onNotificationsPress?: () => void;
   notificationCount?: number;
   guestName?: string;
-  /** From Welcome API `welcome_message` (e.g. "Welcome"). */
   welcomeMessage?: string;
-  /** From Welcome API `signature_title` (optional line under subtitle). */
   signatureTitle?: string;
-  /** Shown on bottom bar, e.g. "Apartment NO: 101" or "Apartment NO: —". */
   roomNavLabel?: string;
-  /** Optional overrides; omit for live Open-Meteo weather in the header. */
   temperature?: number;
   weatherCondition?: string;
   activeNavIndex?: number;
   navItems?: NavItemData[];
-  /** When true, filters out the notifications nav item (for testing when notifications feature is disabled) */
   hideNotificationsNav?: boolean;
   backgroundImageSource?: ImageSourcePropType | null;
   isActive?: boolean;
 }
 
-// ─── Default nav items (order as per spec) ───────────────────────────────────
 const DEFAULT_NAV_ITEMS: NavItemData[] = [
-  { id: '1', icon: 'health', label: 'Occupational\nHealth & Safety' },
-  { id: '8', icon: 'notifications', label: 'Messages' },
-  { id: '3', icon: 'cart', label: 'Hypermarket' },
-  { id: '4', icon: 'plaza', label: 'EY Plaza' },
-  { id: '5', icon: 'facilities', label: 'Etihad\nFacilities' },
-  { id: '6', icon: 'channel', label: 'Etihad\nChannel' },
-  { id: '7', icon: 'tv', label: 'TV Channel' },
-  { id: '2', icon: 'dining', label: 'Dining' },
+  {id: '1', icon: 'tv', label: 'Live TV'},
+  {id: '2', icon: 'dining', label: 'Dining'},
+  {id: '3', icon: 'facilities', label: 'Hotel Services'},
+  {id: '4', icon: 'plaza', label: 'Explore Sharjah'},
+  {id: '5', icon: 'health', label: 'Wellness & Fitness'},
+  {id: '6', icon: 'notifications', label: 'Messages'},
+  {id: '7', icon: 'apps', label: 'Apps'},
 ];
 
-// ─── Colors (Etihad brand — primary gold ~50%, secondary ~30%) ───────────────
-const COLORS = {
-  gold: Colors.primary,
-  goldAlt: Colors.primaryLight,
-  white: Colors.white,
-  secondary: Colors.text.muted,
-  overlay: Colors.overlay.black[45],
-  navBg: Colors.background.dark,
-  navDivider: Colors.overlay.white[35],
-  activeNav: Colors.overlay.gold[75],
+const MENU_ICON_SOURCE: Record<NavItemData['icon'], any> = {
+  tv: require('../assets/copthorne/icon_live_tv.png'),
+  dining: require('../assets/copthorne/icon_dining.png'),
+  facilities: require('../assets/copthorne/icon_hotel_services.png'),
+  plaza: require('../assets/copthorne/icon_explore_sharjah.png'),
+  health: require('../assets/copthorne/icon_wellness.png'),
+  notifications: require('../assets/copthorne/icon_messages.png'),
+  apps: require('../assets/copthorne/icon_apps.png'),
+  cart: require('../assets/copthorne/icon_apps.png'),
+  channel: require('../assets/copthorne/icon_live_tv.png'),
 };
 
-
-// ─── Sub-component: Welcome text ────────────────────────────────────────────
-const WelcomeText = React.memo(function WelcomeText({
-  guestName,
-  welcomeMessage = 'Welcome home',  // fallback if API returns nothing
+const NavIcon = React.memo(function NavIcon({
+  type,
+  active,
 }: {
-  guestName: string;
-  welcomeMessage?: string;
-  signatureTitle?: string;
+  type: NavItemData['icon'];
+  active: boolean;
 }) {
   return (
-    <View style={styles.welcomeWrap}>
-      <Image
-        source={require('../assets/welcome-hayyakum.png')}
-        style={styles.welcomeHayyakumImage}
-        resizeMode="contain"
-        accessible
-        accessibilityLabel="حياكم"
-      />
-      <Text style={styles.welcomeTitle}>{welcomeMessage}</Text>
-      {/* <Text style={styles.welcomeName}>{guestName}</Text> */}
-    </View>
+    <Image
+      source={MENU_ICON_SOURCE[type]}
+      style={styles.navIcon}
+      resizeMode="contain"
+      tintColor={active ? Colors.white : Colors.primary}
+      fadeDuration={0}
+    />
   );
 });
 
-// ─── Nav icon renderer (all fit in fixed 48×48 box via StyleSheet) ───────────
-const NavIcon = React.memo(function NavIcon({ type }: { type: NavItemData['icon'] }) {
-  const iconColor = COLORS.white;
-  const stroke = 2;
-
-  switch (type) {
-    case 'health':
-      return (
-        <View style={styles.iconOuter}>
-          <Image
-            source={require('../assets/health-menu1.png')}
-            style={styles.iconHealthImage}
-            resizeMode="contain"
-          />
-        </View>
-      );
-    case 'dining':
-      return (
-        <View style={styles.iconOuter}>
-          <Image
-            source={require('../assets/dining-menu.png')}
-            style={styles.iconDiningImage}
-            resizeMode="contain"
-          />
-        </View>
-      );
-    case 'cart':
-      return (
-        <View style={styles.iconOuter}>
-          <Image
-            source={require('../assets/hypermarket-menu.png')}
-            style={styles.iconCartImage}
-            resizeMode="contain"
-          />
-        </View>
-      );
-    case 'plaza':
-      return (
-        <View style={styles.iconOuter}>
-          <Image
-            source={require('../assets/ey-plaza-menu.png')}
-            style={styles.iconPlazaImage}
-            resizeMode="contain"
-          />
-        </View>
-      );
-    case 'facilities':
-      return (
-        <View style={styles.iconOuter}>
-          <Image
-            source={require('../assets/facilities-menu-icon.png')}
-            style={styles.iconFacilitiesImage}
-            resizeMode="contain"
-          />
-        </View>
-      );
-    case 'channel':
-      return (
-        <View style={styles.iconOuter}>
-          <Image
-            source={require('../assets/ethiad-channel-menu.png')}
-            style={styles.iconChannelImage}
-            resizeMode="contain"
-          />
-        </View>
-      );
-    case 'tv':
-      return (
-        <View style={styles.iconOuter}>
-          <Image
-            source={require('../assets/tv-channels-menu.png')}
-            style={styles.iconTvImage}
-            resizeMode="contain"
-          />
-        </View>
-      );
-    case 'notifications':
-      return (
-        <View style={styles.iconOuter}>
-          <Image
-            source={require('../assets/message-menu.png')}
-            style={styles.iconMessageImage}
-            resizeMode="contain"
-            fadeDuration={0}
-          />
-        </View>
-      );
-    default:
-      return null;
-  }
-});
-
-// ─── Sub-component: Single nav item ─────────────────────────────────────────
 const NavItem = React.memo(function NavItem({
   item,
   index,
-  totalItems,
-  isActive,
-  isFocused,
-  isFirst,
-  isLast,
-  isPreferredFocus,
+  active,
+  focused,
+  preferred,
   messageCount,
   onPress,
   onFocus,
 }: {
   item: NavItemData;
   index: number;
-  totalItems: number;
-  isActive: boolean;
-  isFocused: boolean;
-  isFirst: boolean;
-  isLast: boolean;
-  isPreferredFocus: boolean;
+  active: boolean;
+  focused: boolean;
+  preferred: boolean;
   messageCount: number;
   onPress: () => void;
   onFocus: () => void;
@@ -228,679 +132,436 @@ const NavItem = React.memo(function NavItem({
     <TouchableHighlight
       onPress={onPress}
       onFocus={onFocus}
-      underlayColor={isActive ? Colors.primaryDark : Colors.overlay.gold[35]}
+      activeOpacity={1}
+      underlayColor={active ? Colors.primaryDark : 'rgba(168,122,43,0.10)'}
       focusable
-      {...(isPreferredFocus ? ({ hasTVPreferredFocus: true } as any) : null)}
-    >
-      {/* Outer wrapper — gold bg covers icon + label when active */}
-      <View style={[
-        styles.navItemWrapper,
-        isActive && styles.navItemActive,
-        isFocused && styles.navItemFocused,
-      ]}>
-        {/* Fixed-height icon row — all icons sit at exactly the same vertical position */}
-        <View style={styles.navIconBox}>
-          <NavIcon type={item.icon} />
-          {item.icon === 'notifications' && (
-            <View style={styles.messagesCountBadge} pointerEvents="none">
-              <Text style={styles.messagesCountBadgeText}>
+      {...(preferred ? ({hasTVPreferredFocus: true} as any) : null)}
+      style={styles.navTouch}>
+      <View
+        style={[
+          styles.navCard,
+          active && styles.navCardActive,
+          focused && !active && styles.navCardFocused,
+        ]}>
+        <View style={styles.iconWrap}>
+          <NavIcon type={item.icon} active={active} />
+          {item.icon === 'notifications' && messageCount > 0 && (
+            <View style={styles.messageBadge} pointerEvents="none">
+              <Text style={styles.messageBadgeText}>
                 {messageCount > 99 ? '99+' : String(messageCount)}
               </Text>
             </View>
           )}
         </View>
-        {/* Fixed-height label row — always starts at the same y position */}
-        <View style={styles.navLabelBox}>
-          <Text
-            style={[styles.navItemLabel, isActive && styles.navItemLabelActive]}
-            numberOfLines={2}
-            textBreakStrategy="simple"
-          >
-            {item.label}
-          </Text>
-        </View>
+        <Text
+          style={[styles.navLabel, active && styles.navLabelActive]}
+          numberOfLines={2}>
+          {item.label}
+        </Text>
       </View>
     </TouchableHighlight>
   );
 });
 
-// ─── Sub-component: Bottom nav bar ──────────────────────────────────────────
-// Shows a sliding window of 7 items; scrolls when user navigates to next/prev.
-const VISIBLE_NAV_COUNT = 7;
-
-const BottomNavBar = React.memo(function BottomNavBar({
-  items,
-  activeIndex,
-  focusedIndex,
-  messageCount,
-  roomNavLabel = 'Apartment NO: —',
-  onSelectIndex,
-  onFocusIndex,
-  onNavItemPress,
-}: {
-  items: NavItemData[];
-  activeIndex: number;
-  focusedIndex: number;
-  messageCount: number;
-  roomNavLabel?: string;
-  onSelectIndex: (index: number) => void;
-  onFocusIndex: (index: number) => void;
-  onNavItemPress?: (item: NavItemData, index: number) => void;
-}) {
-  const goPrev = useCallback(
-    () => onFocusIndex(Math.max(0, focusedIndex - 1)),
-    [onFocusIndex, focusedIndex],
-  );
-  const goNext = useCallback(
-    () => onFocusIndex(Math.min(items.length - 1, focusedIndex + 1)),
-    [onFocusIndex, focusedIndex, items.length],
-  );
-
-  // Sliding window: show only 7 items; when user moves, shift window to keep focused in view
-  const visibleStart = Math.max(
-    0,
-    Math.min(focusedIndex - Math.floor(VISIBLE_NAV_COUNT / 2), items.length - VISIBLE_NAV_COUNT),
-  );
-  const visibleEnd = Math.min(visibleStart + VISIBLE_NAV_COUNT, items.length);
-  const visibleItems = items.slice(visibleStart, visibleEnd);
-
-  // Stable per-item callbacks — only recreated when the visible window shifts,
-  // preventing NavItem (React.memo) from re-rendering due to new function refs.
-  const itemHandlers = useMemo(
-    () => visibleItems.map((item, localIndex) => {
-      const realIndex = visibleStart + localIndex;
-      return {
-        onPress: () => {
-          onSelectIndex(realIndex);
-          onNavItemPress?.(item, realIndex);
-        },
-        onFocus: () => onFocusIndex(realIndex),
-      };
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [visibleStart, visibleEnd, onSelectIndex, onFocusIndex, onNavItemPress],
-  );
-
+function WelcomeCopy({roomNavLabel}: {roomNavLabel?: string}) {
+  const showRoom = !!roomNavLabel && !/[—-]\s*$/.test(roomNavLabel.trim());
   return (
-    <View style={styles.bottomNavBar}>
-      {/* Apartment number — top left */}
-      <Text style={styles.roomNoText}>{roomNavLabel}</Text>
-      {/* Left arrow — aligned with nav icon row */}
-      <TouchableHighlight
-        onPress={goPrev}
-        underlayColor={Colors.overlay.gold[10]}
-        style={styles.navArrow}
-      >
-        <View style={styles.navArrowIconBox}>
-          <Text style={styles.navArrowIcon}>{'\u2039'}</Text>
+    <View style={styles.copyWrap}>
+      <Text style={styles.preheader}>WELCOME TO</Text>
+      <Text style={styles.hotelTitle}>Copthorne Hotel{`\n`}Sharjah</Text>
+      <Text style={styles.hotelDesc}>
+        Experience comfort, convenience and{`\n`}warm hospitality in the heart of Sharjah.
+      </Text>
+      <View style={styles.shortGoldRule} />
+      <Text style={styles.warmCopy}>We are delighted{`\n`}to have you with us.</Text>
+      {showRoom && (
+        <View style={styles.roomPill}>
+          <Text style={styles.roomPillText}>{roomNavLabel}</Text>
         </View>
-      </TouchableHighlight>
-      <View style={styles.navRow}>
-        {visibleItems.map((item, localIndex) => {
-          const realIndex = visibleStart + localIndex;
-          const h = itemHandlers[localIndex];
-          return (
-            <NavItem
-              key={item.id}
-              item={item}
-              index={realIndex}
-              totalItems={items.length}
-              isActive={realIndex === activeIndex}
-              isFocused={realIndex === focusedIndex}
-              isFirst={realIndex === 0}
-              isLast={realIndex === items.length - 1}
-              isPreferredFocus={realIndex === focusedIndex}
-              messageCount={messageCount}
-              onPress={h.onPress}
-              onFocus={h.onFocus}
-            />
-          );
-        })}
-      </View>
-      {/* Right arrow — aligned with nav icon row */}
-      <TouchableHighlight
-        onPress={goNext}
-        underlayColor={Colors.overlay.gold[10]}
-        style={styles.navArrow}
-      >
-        <View style={styles.navArrowIconBox}>
-          <Text style={styles.navArrowIcon}>{'\u203A'}</Text>
-        </View>
-      </TouchableHighlight>
+      )}
     </View>
   );
-});
+}
 
-// ─── Main component ────────────────────────────────────────────────────────
 export default function WelcomeScreen({
   guestName = 'Guest',
   welcomeMessage = 'Welcome',
   signatureTitle,
-  roomNavLabel = 'Apartment NO: —',
-  temperature: temperatureProp,
-  weatherCondition: weatherConditionProp,
-  activeNavIndex = 3,
-  navItems: navItemsProp = DEFAULT_NAV_ITEMS,
+  roomNavLabel,
+  temperature,
+  weatherCondition,
+  activeNavIndex = 6,
+  navItems = DEFAULT_NAV_ITEMS,
   hideNotificationsNav = false,
   backgroundImageSource = null,
   onNavItemPress,
-  onNotificationsPress,
   notificationCount = 0,
   isActive = true,
 }: WelcomeScreenProps) {
-  const navItems = hideNotificationsNav
-    ? navItemsProp.filter((item) => item.icon !== 'notifications')
-    : navItemsProp;
+  void guestName;
+  void welcomeMessage;
+  void signatureTitle;
 
-  const headerClock = useAppHeaderClock({
-    ...(temperatureProp !== undefined ? { temperature: temperatureProp } : {}),
-    ...(weatherConditionProp !== undefined && weatherConditionProp.trim() !== ''
-      ? { weatherCondition: weatherConditionProp }
-      : {}),
-  });
-  const { date, time, temperature, weatherCondition } = headerClock;
-
-  // Single atomic index — focus and selection are always the same value
-  const [navIndex, setNavIndex] = React.useReducer(
-    (_prev: number, next: number) => next,
-    activeNavIndex,
+  const items = useMemo(
+    () =>
+      hideNotificationsNav
+        ? navItems.filter(item => item.icon !== 'notifications')
+        : navItems,
+    [hideNotificationsNav, navItems],
   );
-  const focusedNavIndex = navIndex;
-  const selectedNavIndex = navIndex;
 
-  // Refs so the key listener closure never goes stale
-  const navIndexRef = useRef(navIndex);
-  navIndexRef.current = navIndex;
-  const navItemsRef = useRef(navItems);
-  navItemsRef.current = navItems;
-  const onNavItemPressRef = useRef(onNavItemPress);
-  onNavItemPressRef.current = onNavItemPress;
+  const safeInitial = Math.max(0, Math.min(items.length - 1, activeNavIndex));
+  const [focusedIndex, setFocusedIndex] = useState(safeInitial);
+  const focusedIndexRef = useRef(safeInitial);
+  const itemsRef = useRef(items);
+  const onPressRef = useRef(onNavItemPress);
+  itemsRef.current = items;
+  onPressRef.current = onNavItemPress;
+  focusedIndexRef.current = focusedIndex;
 
   useEffect(() => {
-    setNavIndex(activeNavIndex);
-  }, [activeNavIndex]);
+    const next = Math.max(0, Math.min(items.length - 1, activeNavIndex));
+    focusedIndexRef.current = next;
+    setFocusedIndex(next);
+  }, [activeNavIndex, items.length]);
 
-  // JS-driven remote navigation.
-  // Key events ARE confirmed reaching JS (diagnostic log shows keyCode 21/22).
-  // Native TV focus engine has no initial focused view so DPAD does nothing
-  // natively — we drive everything from JS instead.
+  const selectIndex = useCallback((idx: number) => {
+    const next = Math.max(0, Math.min(itemsRef.current.length - 1, idx));
+    focusedIndexRef.current = next;
+    setFocusedIndex(next);
+  }, []);
+
   useEffect(() => {
-    if (Platform.OS !== 'android' || !isActive) return;
+    if (!isActive || Platform.OS !== 'android') {
+      return;
+    }
     const sub = DeviceEventEmitter.addListener(
       'onKeyDown',
-      (evt: { keyCode: number }) => {
-        const kc = evt.keyCode;
-        const count = navItemsRef.current.length;
+      (evt: {keyCode?: number}) => {
+        const kc = Number(evt?.keyCode ?? -1);
         if (kc === 4) {
-          // BACK on welcome screen → exit the app
           BackHandler.exitApp();
-        } else if (kc === 21) {
-          // DPAD_LEFT
-          setNavIndex(Math.max(0, navIndexRef.current - 1));
-        } else if (kc === 22) {
-          // DPAD_RIGHT
-          setNavIndex(Math.min(count - 1, navIndexRef.current + 1));
-        } else if (kc === 23 || kc === 66 || kc === 109) {
-          // DPAD_CENTER (OK) or ENTER — fire the highlighted item's action
-          const idx = navIndexRef.current;
-          const item = navItemsRef.current[idx];
-          if (item) onNavItemPressRef.current?.(item, idx);
+          return;
+        }
+        if (kc === 21) {
+          selectIndex(focusedIndexRef.current - 1);
+          return;
+        }
+        if (kc === 22) {
+          selectIndex(focusedIndexRef.current + 1);
+          return;
+        }
+        if (kc === 23 || kc === 66 || kc === 109) {
+          const idx = focusedIndexRef.current;
+          const item = itemsRef.current[idx];
+          if (item) {
+            onPressRef.current?.(item, idx);
+          }
         }
       },
     );
     return () => sub.remove();
-  }, [isActive]);
+  }, [isActive, selectIndex]);
+
+  const clock = useAppHeaderClock({
+    ...(temperature !== undefined ? {temperature} : {}),
+    ...(weatherCondition && weatherCondition.trim().length > 0
+      ? {weatherCondition}
+      : {}),
+  });
 
   const content = (
-    <>
-      {/* Header — logo left, time/weather right */}
+    <View style={styles.container}>
+      {/* Reference-style soft white shading. This sits above the image only;
+          it never changes the API image URI, resize mode, caching, or loader. */}
+      <LinearGradient
+        colors={[
+          'rgba(255,255,255,0.98)',
+          'rgba(255,255,255,0.92)',
+          'rgba(255,255,255,0.64)',
+          'rgba(255,255,255,0.16)',
+          'rgba(255,255,255,0.00)',
+        ]}
+        locations={[0, 0.25, 0.46, 0.67, 1]}
+        start={{x: 0, y: 0.5}}
+        end={{x: 1, y: 0.5}}
+        style={StyleSheet.absoluteFillObject}
+        pointerEvents="none"
+      />
+      <LinearGradient
+        colors={[
+          'rgba(255,255,255,0.00)',
+          'rgba(255,255,255,0.16)',
+          'rgba(255,255,255,0.90)',
+          'rgba(255,255,255,0.98)',
+        ]}
+        locations={[0, 0.62, 0.83, 1]}
+        start={{x: 0.5, y: 0}}
+        end={{x: 0.5, y: 1}}
+        style={StyleSheet.absoluteFillObject}
+        pointerEvents="none"
+      />
+
       <AppHeader
-        date={date}
-        time={time}
-        temperature={temperature}
-        weatherCondition={weatherCondition}
+        date={clock.date}
+        time={clock.time}
+        temperature={clock.temperature}
+        weatherCondition={clock.weatherCondition}
       />
-      <WelcomeText
-        guestName={guestName}
-        welcomeMessage={welcomeMessage}
-        signatureTitle={signatureTitle}
-      />
-      <BottomNavBar
-        items={navItems}
-        activeIndex={selectedNavIndex}
-        focusedIndex={focusedNavIndex}
-        messageCount={notificationCount}
-        roomNavLabel={roomNavLabel}
-        onSelectIndex={(i) => setNavIndex(i)}
-        onFocusIndex={(i) => setNavIndex(i)}
-        onNavItemPress={onNavItemPress}
-      />
-    </>
+
+      <WelcomeCopy roomNavLabel={roomNavLabel} />
+
+      <View style={styles.bottomNav}>
+        <View style={styles.arrowSlot} pointerEvents="none">
+          <Image
+            source={require('../assets/copthorne/arrow_left.png')}
+            style={styles.arrowIcon}
+            resizeMode="contain"
+          />
+        </View>
+
+        <View style={styles.navRow}>
+          {items.map((item, index) => {
+            const focused = focusedIndex === index;
+            const active = focused;
+            return (
+              <NavItem
+                key={item.id}
+                item={item}
+                index={index}
+                active={active}
+                focused={focused}
+                preferred={isActive && index === safeInitial}
+                messageCount={notificationCount}
+                onFocus={() => selectIndex(index)}
+                onPress={() => onNavItemPress?.(item, index)}
+              />
+            );
+          })}
+        </View>
+
+        <View style={styles.arrowSlot} pointerEvents="none">
+          <Image
+            source={require('../assets/copthorne/arrow_right.png')}
+            style={styles.arrowIcon}
+            resizeMode="contain"
+          />
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerLeft}>COPTHORNE HOTEL SHARJAH</Text>
+        <Text style={styles.footerRight}>MILLENNIUM HOTELS AND RESORTS</Text>
+      </View>
+    </View>
   );
 
   if (backgroundImageSource) {
     return (
       <ImageBackground
         source={backgroundImageSource}
-        resizeMode="cover"
         style={styles.container}
-      >
+        resizeMode="cover">
         {content}
       </ImageBackground>
     );
   }
 
-  return <View style={[styles.container, styles.containerFallback]}>{content}</View>;
+  return content;
 }
 
-// ─── Styles (1280×720 design, scaled) ───────────────────────────────────────
 const styles = StyleSheet.create({
   container: {
     width: WINDOW_WIDTH,
     height: WINDOW_HEIGHT,
-  },
-  containerFallback: {
     backgroundColor: 'transparent',
+    overflow: 'hidden',
   },
-  welcomeWrap: {
+  copyWrap: {
+    position: 'absolute',
+    left: s(56),
+    top: s(176),
+    width: s(470),
+  },
+  preheader: {
+    fontFamily: FontFamily.medium,
+    fontSize: s(16),
+    lineHeight: s(20),
+    color: Colors.text.dark,
+    letterSpacing: s(5.2),
+    includeFontPadding: false,
+  },
+  hotelTitle: {
+    marginTop: s(9),
+    fontFamily: 'serif',
+    fontSize: s(48),
+    lineHeight: s(51),
+    color: Colors.text.dark,
+    includeFontPadding: false,
+  },
+  hotelDesc: {
+    marginTop: s(15),
+    fontFamily: FontFamily.book,
+    fontSize: s(16),
+    lineHeight: s(24),
+    color: Colors.text.dark,
+    includeFontPadding: false,
+  },
+  shortGoldRule: {
+    width: s(52),
+    height: s(4),
+    marginTop: s(18),
+    backgroundColor: Colors.primary,
+  },
+  warmCopy: {
+    marginTop: s(16),
+    fontFamily: 'serif',
+    fontSize: s(25),
+    lineHeight: s(29),
+    fontStyle: 'italic',
+    color: Colors.primary,
+    includeFontPadding: false,
+  },
+  roomPill: {
+    alignSelf: 'flex-start',
+    marginTop: s(13),
+    borderWidth: 1,
+    borderColor: 'rgba(168,122,43,0.45)',
+    backgroundColor: 'rgba(255,255,255,0.72)',
+    borderRadius: s(12),
+    paddingHorizontal: s(12),
+    paddingVertical: s(5),
+  },
+  roomPillText: {
+    fontFamily: FontFamily.book,
+    fontSize: s(11),
+    color: Colors.text.dark,
+    letterSpacing: s(0.6),
+  },
+  bottomNav: {
     position: 'absolute',
     left: 0,
     right: 0,
-    top: WINDOW_HEIGHT * 0.28,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-  },
-  /** Calligraphy — slightly shorter box so title + block sit higher (still `contain`). */
-  welcomeHayyakumImage: {
-    width: s(680),
-    height: s(132),
-    marginBottom: s(4),
-  },
-  welcomeTitle: {
-    marginTop: s(-8),
-    fontFamily: FontFamily.medium,
-    fontSize: s(72),
-    color: Colors.white,
-    textAlign: 'center',
-    includeFontPadding: false,
-    lineHeight: s(76),
-  },
-  welcomeName: {
-    fontFamily: FontFamily.medium,
-    fontSize: s(72),
-    color: Colors.white,
-    textAlign: 'center',
-    includeFontPadding: false,
-    lineHeight: s(76),
-  },
-  bottomNavBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: s(190),
-    marginBottom: s(40),
-    backgroundColor: 'rgba(40,52,62,0.88)',
+    bottom: s(54),
+    height: s(146),
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'stretch',
+    backgroundColor: 'rgba(255,255,255,0.90)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(168,122,43,0.20)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(168,122,43,0.12)',
+    paddingVertical: s(8),
   },
-  roomNoText: {
-    position: 'absolute',
-    top: s(-32),
-    left: s(24),
-    fontFamily: FontFamily.bold,
-    fontSize: s(20),
-    color: COLORS.white,
-    letterSpacing: 1,
-    includeFontPadding: false,
-  },
-  navArrow: {
-    width: s(48),
-    height: s(190),
+  arrowSlot: {
+    width: s(54),
     alignItems: 'center',
     justifyContent: 'center',
   },
-  navArrowIconBox: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  navArrowIcon: {
-    fontSize: s(100),
-    lineHeight: s(100),
-    color: COLORS.white,
-    fontWeight: '300',
-    includeFontPadding: false,
-    textAlignVertical: 'center',
+  arrowIcon: {
+    width: s(28),
+    height: s(62),
   },
   navRow: {
     flex: 1,
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
+    alignItems: 'stretch',
+    justifyContent: 'space-between',
+    gap: s(6),
   },
-  navItemWrapper: {
-    width: s(165),
-    minWidth: s(165),
-    height: s(190),
-    paddingHorizontal: s(8),
-    flexDirection: 'column',
+  navTouch: {
+    flex: 1,
+    borderRadius: s(7),
+    overflow: 'hidden',
+  },
+  navCard: {
+    flex: 1,
+    minWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  navIconBox: {
-    width: s(80),
-    height: s(80),
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  navItemTouch: {
-    width: '100%',
-    height: s(80),
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  messagesCountBadge: {
-    position: 'absolute',
-    top: s(-4),
-    right: s(4),
-    minWidth: s(22),
-    height: s(22),
-    borderRadius: s(11),
-    backgroundColor: '#826332',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderRadius: s(7),
+    borderWidth: 1,
+    borderColor: 'rgba(168,122,43,0.22)',
+    backgroundColor: 'rgba(255,255,255,0.94)',
     paddingHorizontal: s(5),
-    zIndex: 10,
+    paddingVertical: s(8),
   },
-  messagesCountBadgeText: {
-    fontFamily: FontFamily.bold,
-    fontSize: s(11),
-    color: Colors.white,
+  navCardActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+    transform: [{scale: 1.025}],
+  },
+  navCardFocused: {
+    borderColor: Colors.primary,
+    borderWidth: 2,
+    backgroundColor: 'rgba(255,255,255,0.98)',
+  },
+  iconWrap: {
+    width: s(62),
+    height: s(62),
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  navIcon: {
+    width: s(54),
+    height: s(54),
+  },
+  navLabel: {
+    marginTop: s(3),
+    fontFamily: FontFamily.book,
+    fontSize: s(13),
+    lineHeight: s(17),
+    color: Colors.text.dark,
     textAlign: 'center',
     includeFontPadding: false,
   },
-  iconBox: {
-    width: s(64),
-    height: s(64),
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  navLabelBox: {
-    width: '100%',
-    height: s(44),
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: s(6),
-  },
-  navItemLabelWrap: {
-    width: '100%',
-    height: s(44),
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    marginTop: s(6),
-  },
-  navItemActive: {
-    backgroundColor: Colors.primary,
-  },
-  navItemActiveInner: {
-    backgroundColor: Colors.primary,
-    overflow: 'hidden',
-  },
-  navItemFocused: {
-    transform: [{ scale: 1.05 }],
-  },
-  navItemInner: {
-    flex: 1,
-    alignSelf: 'stretch',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  navItemLabel: {
-    fontFamily: FontFamily.book,
-    fontSize: s(14),
+  navLabelActive: {
     color: Colors.white,
-    textAlign: 'center',
-    width: '100%',
+    fontFamily: FontFamily.medium,
   },
-  navItemLabelActive: {
-    fontFamily: FontFamily.text,
-    fontSize: s(14),
-    color: Colors.white,
-  },
-  iconOuter: {
-    width: s(72),
-    height: s(72),
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  iconOuterRelative: {
-    position: 'relative',
-  },
-  iconShield: {
-    width: s(36),
-    height: s(40),
-    borderRadius: s(6),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconCross: {
-    fontFamily: FontFamily.bold,
-    fontSize: s(20),
-  },
-  iconCircle: {
-    width: s(38),
-    height: s(38),
-    borderRadius: s(19),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconForkKnife: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: s(4),
-  },
-  iconFork: {
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  iconForkTines: {
-    flexDirection: 'row',
-    gap: 1,
-  },
-  iconForkTine: {
-    width: 2,
-    height: s(8),
-  },
-  iconForkHandle: {
-    width: 2,
-    height: s(12),
-    marginTop: s(2),
-  },
-  iconKnife: {
-    width: s(2),
-    height: s(16),
-    transform: [{ rotate: '-25deg' }],
-  },
-  iconPlaza: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: s(6),
-    height: s(48),
-  },
-  iconPlazaTower: {
-    width: s(14),
-    height: s(36),
-    borderRadius: 2,
-  },
-  iconPlazaTowerRight: {
-    height: s(30),
-  },
-  iconFacilities: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: s(3),
-  },
-  iconFacilityCell: {
-    width: s(12),
-    height: s(12),
-    borderRadius: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconFacilityP: {
-    fontFamily: FontFamily.bold,
-    fontSize: s(8),
-  },
-  iconDumbbell: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconDumbbellEnd: {
-    width: s(5),
-    height: s(8),
-    borderRadius: s(2),
-  },
-  iconDumbbellBar: {
-    width: s(6),
-    height: 2,
-    marginHorizontal: 1,
-  },
-  iconWifi: {
-    width: s(12),
-    height: s(12),
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  iconWifiBar: {
-    width: 1,
-    height: s(4),
+  messageBadge: {
     position: 'absolute',
-    bottom: 0,
-    left: 1,
-  },
-  iconWifiBarM: {
-    height: s(7),
-    left: s(4),
-  },
-  iconWifiBarR: {
-    height: s(10),
-    left: s(9),
-  },
-  iconHealthImage: {
-    width: s(72),
-    height: s(72),
-    alignSelf: 'center',
-  },
-  iconFacilitiesImage: {
-    width: s(72),
-    height: s(72),
-    alignSelf: 'center',
-  },
-  iconChannelImage: {
-    width: s(72),
-    height: s(72),
-    alignSelf: 'center',
-  },
-  iconTvImage: {
-    width: s(72),
-    height: s(72),
-    alignSelf: 'center',
-  },
-  iconMessageImage: {
-    width: s(72),
-    height: s(72),
-    alignSelf: 'center',
-  },
-  iconNotificationsText: {
-    fontSize: s(32),
-    textAlign: 'center',
-  },
-  iconMessagesOutline: {
-    width: s(36),
-    height: s(28),
+    top: s(-4),
+    right: s(-2),
+    minWidth: s(21),
+    height: s(21),
+    borderRadius: s(11),
+    backgroundColor: Colors.primary,
     borderWidth: 2,
     borderColor: Colors.white,
-    borderRadius: s(6),
-    backgroundColor: 'transparent',
-  },
-  iconPlazaImage: {
-    width: s(72),
-    height: s(72),
-    alignSelf: 'center',
-  },
-  iconCartImage: {
-    width: s(72),
-    height: s(72),
-    alignSelf: 'center',
-  },
-  iconMonitor: {
-    width: s(34),
-    height: s(30),
-    borderRadius: s(3),
-    overflow: 'hidden',
+    paddingHorizontal: s(5),
     alignItems: 'center',
-  },
-  iconScreen: {
-    width: '100%',
-    height: s(20),
     justifyContent: 'center',
-    alignItems: 'center',
   },
-  iconMonitorText: {
+  messageBadgeText: {
     fontFamily: FontFamily.bold,
-    fontSize: s(9),
+    fontSize: s(10),
+    color: Colors.white,
+    includeFontPadding: false,
   },
-  iconRemote: {
-    width: s(12),
-    height: s(6),
-    borderRadius: 2,
-    marginTop: s(1),
-    alignSelf: 'center',
-  },
-  iconCartBasket: {
+  footer: {
     position: 'absolute',
-    width: s(32),
-    height: s(18),
-    borderTopWidth: 0,
-    borderBottomLeftRadius: s(4),
-    borderBottomRightRadius: s(4),
-    top: s(10),
-    left: s(7),
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: s(54),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: s(45),
+    backgroundColor: 'rgba(255,255,255,0.96)',
   },
-  iconCartHandle: {
-    position: 'absolute',
-    width: s(14),
-    height: 2,
-    top: s(8),
-    right: s(4),
-    transform: [{ rotate: '-20deg' }],
+  footerLeft: {
+    fontFamily: FontFamily.book,
+    fontSize: s(8),
+    color: Colors.text.dark,
+    letterSpacing: s(3.2),
   },
-  iconCartWheel: {
-    position: 'absolute',
-    width: s(7),
-    height: s(7),
-    borderRadius: s(4),
-    bottom: s(4),
-    left: s(9),
-  },
-  iconCartWheelRight: {
-    position: 'absolute',
-    width: s(7),
-    height: s(7),
-    borderRadius: s(4),
-    bottom: s(4),
-    right: s(9),
-  },
-  iconDiningImage: {
-    width: s(72),
-    height: s(72),
-    alignSelf: 'center',
+  footerRight: {
+    fontFamily: FontFamily.book,
+    fontSize: s(8),
+    color: Colors.text.dark,
+    letterSpacing: s(3.0),
   },
 });
-

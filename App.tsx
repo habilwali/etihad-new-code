@@ -215,7 +215,7 @@ function AppContent(): React.JSX.Element {
   const backgroundSource =
     backgroundImageUri != null && backgroundImageUri.length > 0
       ? {uri: backgroundImageUri}
-      : require('./src/assets/background.jpg');
+      : require('./src/assets/copthorne/background.jpg');
 
   return (
     <ImageBackground
@@ -242,7 +242,7 @@ function AppContent(): React.JSX.Element {
           {...commonProps}
           {...welcomeScreenExtra}
           isActive={screen === 'welcome' && splashDone}
-          activeNavIndex={3}
+          activeNavIndex={6}
           backgroundImageSource={null}
           onNotificationsPress={() => setScreen('notifications')}
           notificationCount={unreadCount}
@@ -263,6 +263,8 @@ function AppContent(): React.JSX.Element {
               setScreen('plaza');
             } else if (item.icon === 'notifications') {
               setScreen('notifications');
+            } else if (item.icon === 'apps') {
+              setScreen('hypermarket');
             }
           }}
         />
@@ -340,7 +342,7 @@ function AppContent(): React.JSX.Element {
           can never ghost over the home content on slow TVs. */}
       {!splashDone && (
         <View
-          style={[StyleSheet.absoluteFillObject, {backgroundColor: '#28343E'}]}
+          style={[StyleSheet.absoluteFillObject, {backgroundColor: '#F8F5EF'}]}
           pointerEvents="box-none">
           <EtihadSplashScreen onFinish={handleSplashFinish} />
         </View>

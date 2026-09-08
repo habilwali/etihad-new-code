@@ -611,13 +611,13 @@ const pdfStyles = StyleSheet.create({
   closeBtnText: {
     fontFamily: FontFamily.medium,
     fontSize: 13,
-    color: Colors.text.light,
+    color: Colors.white,
   },
   headerTitle: {
     flex: 1,
     fontFamily: FontFamily.medium,
     fontSize: 14,
-    color: Colors.text.light,
+    color: Colors.white,
   },
   pdf: {
     flex: 1,
@@ -653,7 +653,7 @@ const pdfStyles = StyleSheet.create({
   loadingText: {
     fontFamily: FontFamily.book,
     fontSize: 14,
-    color: Colors.text.light,
+    color: Colors.white,
     textAlign: 'center',
   },
   errorIcon: {
@@ -773,13 +773,13 @@ const vidStyles = StyleSheet.create({
   closeBtnText: {
     fontFamily: FontFamily.medium,
     fontSize: 13,
-    color: Colors.text.light,
+    color: Colors.white,
   },
   headerTitle: {
     flex: 1,
     fontFamily: FontFamily.medium,
     fontSize: 14,
-    color: Colors.text.light,
+    color: Colors.white,
   },
   hint: {
     fontFamily: FontFamily.book,
@@ -890,13 +890,13 @@ const imgStyles = StyleSheet.create({
   closeBtnText: {
     fontFamily: FontFamily.medium,
     fontSize: 13,
-    color: Colors.text.light,
+    color: Colors.white,
   },
   headerTitle: {
     flex: 1,
     fontFamily: FontFamily.medium,
     fontSize: 14,
-    color: Colors.text.light,
+    color: Colors.white,
   },
   hint: {
     fontFamily: FontFamily.book,
@@ -1517,6 +1517,13 @@ const styles = StyleSheet.create({
   contentRow: {
     flex: 1,
     flexDirection: 'row',
+    marginHorizontal: 28,
+    marginBottom: 14,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: Colors.overlay.gold[20],
+    overflow: 'hidden',
   },
   sidebar: {
     width: 320,
@@ -1531,7 +1538,7 @@ const styles = StyleSheet.create({
     paddingTop: 28,
     paddingBottom: 16,
     borderBottomWidth: 0.5,
-    borderBottomColor: Colors.overlay.white[7],
+    borderBottomColor: Colors.overlay.gold[15],
   },
   sidebarTitleRow: {
     flexDirection: 'row',
@@ -1542,7 +1549,7 @@ const styles = StyleSheet.create({
   sidebarTitle: {
     fontFamily: FontFamily.medium,
     fontSize: 11,
-    color: Colors.overlay.white[35],
+    color: Colors.text.muted,
     letterSpacing: 1.2,
   },
   badge: {
@@ -1557,7 +1564,7 @@ const styles = StyleSheet.create({
   badgeText: {
     fontFamily: FontFamily.bold,
     fontSize: 11,
-    color: Colors.black,
+    color: Colors.white,
   },
   filterRow: {
     flexDirection: 'row',
@@ -1572,7 +1579,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 0.5,
-    borderColor: Colors.overlay.white[12],
+    borderColor: Colors.overlay.gold[20],
   },
   filterTabActive: {
     backgroundColor: Colors.overlay.gold[20],
@@ -1586,10 +1593,10 @@ const styles = StyleSheet.create({
   filterTabText: {
     fontFamily: FontFamily.medium,
     fontSize: 13,
-    color: Colors.overlay.white[35],
+    color: Colors.text.muted,
   },
   filterTabTextActive: {
-    color: Colors.gold[100],
+    color: Colors.primaryDark,
   },
   filterTabTextFocused: {
     color: Colors.primaryLight,
@@ -1598,7 +1605,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontFamily: FontFamily.medium,
     fontSize: 10,
-    color: Colors.overlay.white[35],
+    color: Colors.text.muted,
     letterSpacing: 1.0,
     textTransform: 'uppercase',
     paddingHorizontal: 20,
@@ -1655,7 +1662,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: FontFamily.medium,
     fontSize: 11,
-    color: Colors.overlay.white[35],
+    color: Colors.text.muted,
   },
   notifTime: {
     fontFamily: FontFamily.book,
@@ -1677,7 +1684,7 @@ const styles = StyleSheet.create({
   },
   notifTitleSeen: {
     fontFamily: FontFamily.book,
-    color: Colors.overlay.white[35],
+    color: Colors.text.muted,
   },
   notifPreview: {
     fontFamily: FontFamily.book,
@@ -1700,7 +1707,7 @@ const styles = StyleSheet.create({
   detailEmptyText: {
     fontFamily: FontFamily.book,
     fontSize: 14,
-    color: Colors.overlay.white[35],
+    color: Colors.text.muted,
   },
   empty: {
     alignItems: 'center',
@@ -1753,7 +1760,7 @@ const styles = StyleSheet.create({
   detailApp: {
     fontFamily: FontFamily.medium,
     fontSize: 11,
-    color: Colors.overlay.white[35],
+    color: Colors.text.muted,
     letterSpacing: 1.0,
   },
   detailTitle: {
@@ -1778,8 +1785,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   statusSeen: {
-    backgroundColor: Colors.overlay.white[5],
-    borderColor: Colors.overlay.white[12],
+    backgroundColor: Colors.overlay.gold[5],
+    borderColor: Colors.overlay.gold[20],
   },
   statusText: {
     fontFamily: FontFamily.medium,
@@ -1793,7 +1800,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 0.5,
-    backgroundColor: Colors.overlay.white[7],
+    backgroundColor: Colors.overlay.gold[15],
     marginBottom: 24,
   },
   thumb: {
@@ -1832,7 +1839,7 @@ const styles = StyleSheet.create({
   thumbLabelText: {
     fontFamily: FontFamily.book,
     fontSize: 11,
-    color: Colors.text.light,
+    color: Colors.white,
   },
   detailBody: {
     fontFamily: FontFamily.book,
@@ -1856,7 +1863,7 @@ const styles = StyleSheet.create({
   attachmentImage: {
     width: '100%',
     height: 220,
-    backgroundColor: Colors.overlay.white[5],
+    backgroundColor: Colors.overlay.gold[5],
   },
   mediaFocusHint: {
     position: 'absolute',
@@ -1941,8 +1948,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   actionBtnSecondary: {
-    backgroundColor: Colors.overlay.white[5],
-    borderColor: Colors.overlay.white[12],
+    backgroundColor: Colors.overlay.gold[5],
+    borderColor: Colors.overlay.gold[20],
   },
   actionBtnDanger: {
     backgroundColor: 'rgba(240,93,56,0.12)',
@@ -1958,10 +1965,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   actionBtnTextPrimary: {
-    color: Colors.gold[100],
+    color: Colors.primaryDark,
   },
   actionBtnTextSecondary: {
-    color: Colors.overlay.white[35],
+    color: Colors.text.muted,
   },
   actionBtnTextDanger: {
     color: Colors.liwaOrange[300],
@@ -1976,9 +1983,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    backgroundColor: Colors.overlay.white[5],
+    backgroundColor: Colors.overlay.gold[5],
     borderWidth: 0.5,
-    borderColor: Colors.overlay.white[12],
+    borderColor: Colors.overlay.gold[20],
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -2024,7 +2031,7 @@ const styles = StyleSheet.create({
   attachmentOpenHint: {
     fontFamily: FontFamily.book,
     fontSize: 13,
-    color: Colors.overlay.white[35],
+    color: Colors.text.muted,
     paddingLeft: 4,
   },
   attachmentOpenHintFocused: {

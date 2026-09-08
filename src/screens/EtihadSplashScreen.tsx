@@ -1,34 +1,28 @@
-/**
- * Etihad Plaza Hotel — TV Splash Screen
- * Logo on `background.jpg` — matches native window (`android:windowBackground` / iOS LaunchScreen).
- * Stays visible for MAX_SPLASH_MS so the home screen paints underneath before the fade-out.
- * Any key press skips immediately.
- */
+/** Copthorne Hotel Sharjah — TV splash screen. */
 
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import {
+  DeviceEventEmitter,
+  Dimensions,
   Image,
   ImageBackground,
-  StyleSheet,
-  Dimensions,
-  DeviceEventEmitter,
   Platform,
+  StyleSheet,
+  View,
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 
-const { width: SW } = Dimensions.get('window');
+const {width: SW} = Dimensions.get('window');
 
-const BG_IMAGE = require('../assets/background.jpg');
-const LOGO_IMAGE = require('../assets/header/ethiad-logo-marketing.png');
-
-// Keep splash visible long enough for the home component tree to fully paint underneath.
-// On a slow TV (1 GB RAM) inflation can take 1-2 s; 3500 ms gives comfortable headroom.
+const BG_IMAGE = require('../assets/copthorne/background.jpg');
+const LOGO_IMAGE = require('../assets/copthorne/logo.png');
 const MAX_SPLASH_MS = 3500;
 
 export interface EtihadSplashProps {
   onFinish: () => void;
 }
 
-export default function EtihadSplashScreen({ onFinish }: EtihadSplashProps) {
+export default function EtihadSplashScreen({onFinish}: EtihadSplashProps) {
   const finishedRef = useRef(false);
   const onFinishRef = useRef(onFinish);
   onFinishRef.current = onFinish;
@@ -50,7 +44,6 @@ export default function EtihadSplashScreen({ onFinish }: EtihadSplashProps) {
     };
   }, [goHome]);
 
-  // Any remote key press skips the splash early.
   useEffect(() => {
     if (Platform.OS !== 'android') return;
     const sub = DeviceEventEmitter.addListener('onKeyDown', goHome);
@@ -59,14 +52,22 @@ export default function EtihadSplashScreen({ onFinish }: EtihadSplashProps) {
 
   return (
     <ImageBackground source={BG_IMAGE} style={s.root} resizeMode="cover">
-      <Image source={LOGO_IMAGE} style={s.logo} resizeMode="contain" />
+      <LinearGradient
+        colors={['rgba(255,255,255,0.97)', 'rgba(255,255,255,0.74)', 'rgba(255,255,255,0.18)']}
+        locations={[0, 0.48, 1]}
+        start={{x: 0, y: 0.5}}
+        end={{x: 1, y: 0.5}}
+        style={StyleSheet.absoluteFillObject}
+      />
+      <View style={s.logoCard}>
+        <Image source={LOGO_IMAGE} style={s.logo} resizeMode="contain" />
+      </View>
     </ImageBackground>
   );
 }
 
-// Match native splash_logo size (~160dp) to avoid size jump when React mounts
-const LOGO_WIDTH = SW * 0.17;
-const LOGO_HEIGHT = LOGO_WIDTH * 0.31;
+const LOGO_WIDTH = SW * 0.34;
+const LOGO_HEIGHT = LOGO_WIDTH * 0.48;
 
 const s = StyleSheet.create({
   root: {
@@ -75,8 +76,15 @@ const s = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    // Fallback while background.jpg is decoding — keeps splash opaque on first cold launch.
-    backgroundColor: '#28343E',
+    backgroundColor: '#F8F5EF',
+  },
+  logoCard: {
+    width: LOGO_WIDTH * 1.2,
+    height: LOGO_HEIGHT * 1.1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.86)',
   },
   logo: {
     width: LOGO_WIDTH,

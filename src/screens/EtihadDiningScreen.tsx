@@ -48,7 +48,7 @@ const DINING_HERO_STATIC = require('../assets/images/dining-hero.jpg');
 const { width: SW, height: SH } = Dimensions.get('window');
 
 /** Matches WelcomeScreen bottom nav / Hypermarket — venue strip & sidebar */
-const BOTTOM_BAR_BG = 'rgba(40,52,62,0.88)';
+const BOTTOM_BAR_BG = 'rgba(255,255,255,0.94)';
 
 /* ─── THEME (Facilities-aligned text + Etihad primary) ─────────────────────── */
 const C = {
@@ -583,15 +583,16 @@ const s = StyleSheet.create({
    *                must match heroWrap dimensions for a full-bleed cover.
    * ───────────────────────────────────────────────────────────────────────── */
   heroWrap: {
-    width: '100%',
-    height: SH * 0.33,
+    height: SH * 0.31,
+    marginHorizontal: 28,
+    borderRadius: 14,
     position: 'relative',
     overflow: 'hidden',
     backgroundColor: C.panel,   // shown while the image is loading
   },
   heroBgImage: {
     width: SW,
-    height: SH * 0.33,
+    height: SH * 0.31,
   },
   heroGradientLayer: {
     ...StyleSheet.absoluteFillObject,
@@ -610,7 +611,7 @@ const s = StyleSheet.create({
   heroName: {
     fontFamily: FontFamily.book,
     fontSize: 24,
-    color: C.text,
+    color: Colors.white,
     letterSpacing: 0.4,
   },
   heroCuisine: {
@@ -618,7 +619,7 @@ const s = StyleSheet.create({
     fontSize: 10,
     lineHeight: 15,
     letterSpacing: 0.2,
-    color: C.text,
+    color: Colors.white,
   },
 
   /* BODY */
@@ -626,13 +627,19 @@ const s = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     overflow: 'hidden',
+    marginHorizontal: 28,
+    marginBottom: 12,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    borderWidth: 1,
+    borderColor: Colors.overlay.gold[20],
   },
 
   /* SIDEBAR */
   sidebar: {
     width: SIDEBAR_W,
     borderRightWidth: 1,
-    borderRightColor: 'rgba(255,255,255,0.08)',
+    borderRightColor: 'rgba(168,122,43,0.14)',
     backgroundColor: BOTTOM_BAR_BG,
     flexDirection: 'column',
   },
@@ -647,7 +654,7 @@ const s = StyleSheet.create({
     paddingBottom: 12,
     gap: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: 'rgba(168,122,43,0.14)',
   },
   sidebarHeaderTxt: {
     fontFamily: FontFamily.book,
@@ -655,7 +662,7 @@ const s = StyleSheet.create({
     letterSpacing: 0.2,
     color: C.text,
   },
-  sidebarHeaderLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.1)' },
+  sidebarHeaderLine: { flex: 1, height: 1, backgroundColor: 'rgba(168,122,43,0.16)' },
   sidebarItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -664,7 +671,7 @@ const s = StyleSheet.create({
     borderLeftWidth: 2,
     borderLeftColor: 'transparent',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.06)',
+    borderBottomColor: 'rgba(168,122,43,0.10)',
     gap: 14,
     position: 'relative',
   },
@@ -676,7 +683,7 @@ const s = StyleSheet.create({
     fontFamily: FontFamily.book,
     fontSize: 13,
     lineHeight: 18,
-    color: 'rgba(255,255,255,0.82)',
+    color: Colors.text.dark,
     letterSpacing: 0.2,
     marginBottom: 3,
   },
@@ -745,7 +752,7 @@ const s = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: 'rgba(168,122,43,0.14)',
     backgroundColor: BOTTOM_BAR_BG,
   },
   tabBarFocused: { borderBottomColor: C.focusBorder },
@@ -761,7 +768,7 @@ const s = StyleSheet.create({
     fontFamily: FontFamily.book,
     fontSize: 10,
     letterSpacing: 0.2,
-    color: 'rgba(255,255,255,0.82)',
+    color: Colors.text.dark,
     marginBottom: 2,
   },
   tabLabelActive: { fontFamily: FontFamily.text, color: C.text },

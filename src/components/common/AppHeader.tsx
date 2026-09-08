@@ -1,17 +1,10 @@
 /**
- * App-wide header bar — Etihad Plaza TV
+ * Copthorne Hotel Sharjah app-wide header.
  *
- * Layout (left → right):
- *   [Etihad marketing logo]  ···  [Time + Date]  [Temp + Icon]  [Condition]
- *
- * No background is applied; the caller owns the backdrop.
- * A gold gradient rule is drawn below the info row.
- *
- * Date/time/weather usually come from `useAppHeaderClock()` (Open-Meteo for Abu Dhabi).
- *
- * Usage:
- *   const h = useAppHeaderClock();
- *   <AppHeader date={h.date} time={h.time} temperature={h.temperature} weatherCondition={h.weatherCondition} />
+ * The component keeps the same public API used throughout the project so no
+ * screen/data logic needs to change. It only replaces the former Etihad visual
+ * treatment with the Copthorne logo, warmer-place tagline and navy/gold hotel
+ * styling shown in the approved reference theme.
  */
 
 import React from 'react';
@@ -22,10 +15,11 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Colors } from '../../theme/colors';
-import { FontFamily } from '../../theme/typography';
+import LinearGradient from 'react-native-linear-gradient';
+import {Colors} from '../../theme/colors';
+import {FontFamily} from '../../theme/typography';
 
-const { width: WINDOW_WIDTH } = Dimensions.get('window');
+const {width: WINDOW_WIDTH} = Dimensions.get('window');
 const DESIGN_WIDTH = 1280;
 const sc = WINDOW_WIDTH / DESIGN_WIDTH;
 const s = (n: number) => Math.round(n * sc);
@@ -41,22 +35,39 @@ export function AppHeader({
   date = '',
   time = '',
   temperature = 23,
-  weatherCondition = 'Sunny',
+  weatherCondition = 'Clear',
 }: AppHeaderProps) {
   return (
     <View style={styles.wrapper}>
-      {/* ── Main row ─────────────────────────────────────────────────── */}
-      <View style={styles.row}>
-        {/* Left — brand logo */}
-        <Image
-          source={require('../../assets/header/ethiad-logo-marketing.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+      <LinearGradient
+        colors={[
+          'rgba(255,255,255,0.96)',
+          'rgba(255,255,255,0.84)',
+          'rgba(255,255,255,0.20)',
+          'rgba(255,255,255,0.00)',
+        ]}
+        locations={[0, 0.28, 0.58, 1]}
+        start={{x: 0, y: 0.5}}
+        end={{x: 1, y: 0.5}}
+        style={StyleSheet.absoluteFillObject}
+        pointerEvents="none"
+      />
 
-        {/* Right — time / weather */}
+      <View style={styles.row}>
+        <View style={styles.brandGroup}>
+          <Image
+            source={require('../../assets/copthorne/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <View style={styles.brandDivider} />
+          <View style={styles.taglineWrap}>
+            <Text style={styles.tagline}>A WARMER</Text>
+            <Text style={styles.tagline}>PLACE TO BE</Text>
+          </View>
+        </View>
+
         <View style={styles.rightGroup}>
-          {/* Time + date (stacked) */}
           <View style={styles.timeBlock}>
             <Text style={styles.timeText}>{time}</Text>
             <Text style={styles.dateText}>{date}</Text>
@@ -64,139 +75,124 @@ export function AppHeader({
 
           <View style={styles.vDivider} />
 
-          {/* Temp + condition + icon */}
           <View style={styles.weatherBlock}>
-            {/* Left: temp number + condition stacked tightly */}
             <View style={styles.tempTextCol}>
-              <View style={styles.tempRow}>
-                <Text style={styles.tempNum}>{temperature}</Text>
-                <View style={styles.degreeBlock}>
-                  <Text style={styles.degreeSym}>°</Text>
-                  <Text style={styles.degreeC}>C</Text>
-                </View>
-              </View>
+              <Text style={styles.tempText}>{temperature}°C</Text>
               <Text style={styles.conditionText}>{weatherCondition}</Text>
             </View>
-            {/* Right: weather icon */}
             <Image
-              source={require('../../assets/header/Weather.png')}
+              source={require('../../assets/copthorne/icon_weather_clear.png')}
               style={styles.weatherIcon}
               resizeMode="contain"
+              tintColor={Colors.primaryLight}
             />
           </View>
         </View>
       </View>
-
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   wrapper: {
-    left: 0,
-    right: 0,
-    marginTop: s(18),
+    width: '100%',
+    height: s(104),
+    justifyContent: 'center',
+    zIndex: 100,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: s(32),
-    paddingVertical: s(18),
+    paddingHorizontal: s(34),
+    paddingVertical: s(10),
   },
-
-  // ── Logo ────────────────────────────────────────────────────────────
+  brandGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: s(78),
+  },
   logo: {
-    width: s(176),
-    height: s(52),
+    width: s(230),
+    height: s(82),
   },
-
-  // ── Right group ─────────────────────────────────────────────────────
+  brandDivider: {
+    width: 1,
+    height: s(52),
+    marginLeft: s(10),
+    marginRight: s(24),
+    backgroundColor: 'rgba(16,39,70,0.58)',
+  },
+  taglineWrap: {
+    justifyContent: 'center',
+    gap: s(2),
+  },
+  tagline: {
+    fontFamily: FontFamily.medium,
+    fontSize: s(12),
+    lineHeight: s(15),
+    letterSpacing: s(4.1),
+    color: Colors.text.dark,
+    includeFontPadding: false,
+  },
   rightGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: s(24),
+    gap: s(20),
+    minHeight: s(74),
+    paddingHorizontal: s(22),
+    paddingVertical: s(10),
+    borderRadius: s(10),
+    backgroundColor: 'rgba(16,39,70,0.54)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
   },
-
-  vDivider: {
-    width: 1,
-    height: s(48),
-    backgroundColor: Colors.overlay.white[35],
-  },
-
-  // ── Time block — Etihad Altis Book, white ────────────────────────────
   timeBlock: {
     alignItems: 'flex-end',
-    gap: 0,
   },
   timeText: {
     fontFamily: FontFamily.book,
-    fontSize: s(36),          // large — matches "15:08" in spec
+    fontSize: s(33),
+    lineHeight: s(35),
     color: Colors.white,
-    lineHeight: s(36),
     includeFontPadding: false,
   },
   dateText: {
     fontFamily: FontFamily.book,
-    fontSize: s(14),          // small — matches "19 Feb 2026" in spec
+    fontSize: s(13),
+    lineHeight: s(17),
     color: Colors.white,
-    lineHeight: s(14),
     includeFontPadding: false,
   },
-
-  // ── Weather block ────────────────────────────────────────────────────
+  vDivider: {
+    width: 1,
+    height: s(48),
+    backgroundColor: 'rgba(255,255,255,0.48)',
+  },
   weatherBlock: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: s(8),
+    gap: s(10),
   },
   tempTextCol: {
     alignItems: 'flex-start',
-    gap: 0,
   },
-  tempRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: s(2),
-  },
-  tempNum: {
+  tempText: {
     fontFamily: FontFamily.book,
-    fontSize: s(36),          // same size as time — matches "23" in spec
+    fontSize: s(31),
+    lineHeight: s(34),
     color: Colors.white,
-    lineHeight: s(36),
-    includeFontPadding: false,
-  },
-  // °C stacked: ° small on top, C larger below — both Etihad Gold #826332
-  degreeBlock: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start',
-    paddingTop: s(3),
-  },
-  degreeSym: {
-    fontFamily: FontFamily.book,
-    fontSize: s(11),
-    color: Colors.white,
-    lineHeight: s(11),
-    includeFontPadding: false,
-  },
-  degreeC: {
-    fontFamily: FontFamily.book,
-    fontSize: s(20),
-    color: Colors.white,
-    lineHeight: s(20),
     includeFontPadding: false,
   },
   conditionText: {
     fontFamily: FontFamily.book,
-    fontSize: s(14),          // same size as date — matches "Sunny" in spec
+    fontSize: s(13),
+    lineHeight: s(17),
     color: Colors.white,
-    lineHeight: s(14),
     includeFontPadding: false,
   },
   weatherIcon: {
-    width: s(58),
-    height: s(58),
+    width: s(50),
+    height: s(50),
   },
 });
-

@@ -172,7 +172,7 @@ export default function EtihadChannelsScreen({
         />
         <View style={st.fallback}>
           <ActivityIndicator size="large" color={Colors.primary} />
-          <Text style={st.fallbackTxt}>Loading Etihad channels…</Text>
+          <Text style={st.fallbackTxt}>Loading channels…</Text>
         </View>
       </View>
     );

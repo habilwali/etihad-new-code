@@ -1,5 +1,5 @@
 /**
- * Etihad Facilities — React Native TV App
+ * Hotel Services — React Native TV App
  * Full remote navigation: UP/DOWN/LEFT/RIGHT moves focus, OK selects, BACK exits.
  */
 
@@ -357,7 +357,7 @@ export default function FacilitiesScreen({
 
           {/* Title centered within the grid column */}
           <View style={st.titleBar}>
-            <Text style={st.titleText}>Etihad Facilities</Text>
+            <Text style={st.titleText}>Hotel Services</Text>
           </View>
 
           {/* Grid rows — vertically centered; rows have fixed height so cards don't overflow */}
@@ -427,8 +427,14 @@ const st = StyleSheet.create({
   main: {
     flex: 1,
     flexDirection: 'row',
+    marginHorizontal: 28,
+    marginBottom: 10,
     paddingHorizontal: H_PAD,
     paddingVertical: MAIN_PAD_V,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: Colors.overlay.gold[20],
   },
 
   mainCenter: {
@@ -513,6 +519,11 @@ const st = StyleSheet.create({
   detail: {
     flex: 1,
     flexDirection: 'column',
+    backgroundColor: 'rgba(255,255,255,0.78)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.overlay.gold[15],
+    padding: 12,
   },
   detailEmpty: {justifyContent: 'center', alignItems: 'center'},
 
@@ -544,5 +555,8 @@ const st = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: H_PAD,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderTopWidth: 1,
+    borderTopColor: Colors.overlay.gold[15],
   },
 });

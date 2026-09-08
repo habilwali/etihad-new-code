@@ -136,7 +136,7 @@ const FALLBACK_ITEMS: OHSItem[] = [
     videoUrl: VIDEOS.emergency,
     hasVideo: true,
     name: 'Emergency Procedures',
-    desc: 'Know what to do in any emergency. Covers fire evacuation routes, assembly points, emergency contact numbers, and first response protocols for all areas of Etihad Plaza.',
+    desc: 'Know what to do in any emergency. Covers fire evacuation routes, assembly points, emergency contact numbers, and first response protocols for all areas of Copthorne Hotel Sharjah.',
     contact: 'Emergency: 999  ·  Security: 02 511 5911',
     highlight: 'Assembly Point: Main Car Park — Gate B',
     resources: [
@@ -190,7 +190,7 @@ const FALLBACK_ITEMS: OHSItem[] = [
     videoUrl: VIDEOS.incident,
     hasVideo: true,
     name: 'Incident Reporting',
-    desc: 'All accidents, near-misses, and unsafe conditions must be reported immediately. Etihad Plaza operates a no-blame reporting culture. Submit via front desk, QR code in room, or directly to OHS.',
+    desc: 'All accidents, near-misses, and unsafe conditions must be reported immediately. Copthorne Hotel Sharjah operates a no-blame reporting culture. Submit via front desk, QR code in room, or directly to OHS.',
     contact: 'OHS Hotline: 02 511 5950',
     highlight: 'Report any incident within 24 hours',
     resources: [
@@ -599,7 +599,7 @@ export default function OccupationalHealthSafetyScreen({
         weatherCondition={headerWeather}
       />
       <View style={st.headerTitleRow}>
-        <Text style={st.pageTitle}>OCCUPATIONAL HEALTH & SAFETY</Text>
+        <Text style={st.pageTitle}>Wellness & Fitness</Text>
       </View>
 
       {/* ── MAIN CONTENT ── */}
@@ -780,9 +780,15 @@ const st = StyleSheet.create({
     flex: 1,
     minHeight: 0,
     flexDirection: 'row',
-    paddingHorizontal: H_PAD,
+    marginHorizontal: 28,
+    marginBottom: 10,
+    paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 8,
+    paddingBottom: 12,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: Colors.overlay.gold[20],
   },
 
   leftCol: {
@@ -816,7 +822,7 @@ const st = StyleSheet.create({
     fontSize: 10,
     lineHeight: 15,
     letterSpacing: 0.2,
-    color: C.text,
+    color: Colors.white,
   },
   playerTopRight: {
     position: 'absolute', top: 12, right: 14,
@@ -833,7 +839,7 @@ const st = StyleSheet.create({
     fontFamily: FontFamily.book,
     fontSize: 13,
     lineHeight: 18,
-    color: C.text,
+    color: Colors.white,
     letterSpacing: 0.2,
     marginBottom: 2,
   },
@@ -841,7 +847,7 @@ const st = StyleSheet.create({
     fontFamily: FontFamily.book,
     fontSize: 10,
     lineHeight: 15,
-    color: C.text,
+    color: Colors.white,
     letterSpacing: 0.2,
   },
   playerVideoTag: {
@@ -854,7 +860,7 @@ const st = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: 8,
     letterSpacing: 1.2,
-    color: C.text,
+    color: Colors.white,
   },
 
   /* THUMBNAIL STRIP — inside leftCol, below the video player */
@@ -893,17 +899,17 @@ const st = StyleSheet.create({
     fontFamily: FontFamily.book,
     fontSize: 10,
     lineHeight: 15,
-    color: 'rgba(255,255,255,0.82)',
+    color: Colors.white,
     letterSpacing: 0.2,
   },
-  thumbLabelActive: { fontFamily: FontFamily.text, color: C.text },
+  thumbLabelActive: { fontFamily: FontFamily.text, color: Colors.white },
   thumbVideoBadge: {
     position: 'absolute', top: 8, right: 8,
     backgroundColor: 'rgba(0,0,0,0.6)',
     borderRadius: 2, width: 16, height: 16,
     alignItems: 'center', justifyContent: 'center',
   },
-  thumbVideoBadgeTxt: { color: C.text, fontSize: 8, fontFamily: FontFamily.book },
+  thumbVideoBadgeTxt: { color: Colors.white, fontSize: 8, fontFamily: FontFamily.book },
 
   /* TYPE PILL */
   pill:      { borderRadius: 3, paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start', flexDirection: 'row' },
@@ -916,7 +922,7 @@ const st = StyleSheet.create({
     width: DETAIL_W,
     minHeight: 0,
     alignSelf: 'stretch',
-    backgroundColor: 'rgba(12,12,18,0.6)',
+    backgroundColor: 'rgba(255,255,255,0.94)',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: C.border,
@@ -928,7 +934,7 @@ const st = StyleSheet.create({
     alignItems: 'flex-start',
     padding: 16,
     gap: 12,
-    backgroundColor: 'rgba(200,170,127,0.04)',
+    backgroundColor: Colors.overlay.gold[5],
   },
   detailIcon:      { fontSize: 28, marginTop: 2 },
   detailTitleText: { flex: 1, gap: 6 },
@@ -1004,7 +1010,7 @@ const st = StyleSheet.create({
   resRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingVertical: 6,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomWidth: 1, borderBottomColor: Colors.overlay.gold[10],
   },
   resIconWrap:  { width: 24, height: 24, borderRadius: 4, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   resIcon:      { fontSize: 10 },
@@ -1025,5 +1031,8 @@ const st = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: H_PAD,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderTopWidth: 1,
+    borderTopColor: Colors.overlay.gold[15],
   },
 });

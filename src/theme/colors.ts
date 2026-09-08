@@ -1,174 +1,142 @@
 /**
- * Etihad Airways Brand Colour System
+ * Copthorne Hotel Sharjah visual theme.
  *
- * COLOUR RATIO RULES (follow strictly):
- * ─────────────────────────────────────────────────────────────────────────────
- * • PRIMARY (Etihad Gold):     ~50% ratio across all UI
- * • SECONDARY (Qasr Stone +    ~30% ratio across all UI
- *   Midnight Dune):
- * • TERTIARY (Desert Sunrise,  ~5% combined — use sparingly
- *   Liwa Orange, Saadiyat      Must be endorsed by Brand team
- *   Blue, Jebel Grey):
- * ─────────────────────────────────────────────────────────────────────────────
+ * The existing semantic keys are intentionally preserved so all current
+ * screens and API-driven components continue to work without changing their
+ * data/image loading behaviour. Only the visual palette has been re-skinned.
  */
-
 export const Colors = {
-  // ─────────────────────────────────────────
-  // PRIMARY — Etihad Gold
-  // Use at ~50% ratio across all UI
-  // ─────────────────────────────────────────
+  // ── Copthorne gold ────────────────────────────────────────────────────────
   gold: {
-    50: '#FEF9EE',
-    100: '#EDE2D0',
-    200: '#DEC39B',
-    300: '#C8AA7F',
-    400: '#B8935A',
-    500: '#B08747', // ← PRIMARY BRAND GOLD (use this as default)
-    600: '#99753D',
-    700: '#826332',
+    50: '#FCF8F0',
+    100: '#F2E7D1',
+    200: '#E5CFA8',
+    300: '#D0AD6A',
+    400: '#BD913E',
+    500: '#A87A2B',
+    600: '#916722',
+    700: '#76531A',
   },
 
-  // Shorthand aliases
-  primary: '#B08747', // Etihad Gold 500 — main brand colour
-  primaryLight: '#C8AA7F', // Gold 300 — for subtle tints
-  primaryDark: '#826332', // Gold 700 — for pressed/active states
+  primary: '#A87A2B',
+  primaryLight: '#C8A25A',
+  primaryDark: '#76531A',
 
-  // ─────────────────────────────────────────
-  // SECONDARY — Qasr Stone & Midnight Dune
-  // Use at ~30% ratio across all UI
-  // ─────────────────────────────────────────
+  // ── Light stone / navy brand surfaces ───────────────────────────────────
+  qasrStone: '#F8F5EF',
 
-  // Qasr Stone — light, neutral background
-  // IMPORTANT: No Pantone; print as CMYK only
-  qasrStone: '#FDF9EF', // HEX FDF9EF | RGB 253,249,239
-
-  // Midnight Dune — dark background for digital
-  // Use for dark mode screens, headers, and contrast areas
+  // Kept under the legacy key because many existing screens use these values
+  // for panels. They are now light Copthorne surfaces rather than dark Etihad
+  // surfaces.
   midnightDune: {
-    300: '#6A95AE',
-    400: '#456577',
-    500: '#2E4755', // ← BASE Midnight Dune
-    600: '#263A46',
-    700: '#1B2932',
+    300: '#E7E0D3',
+    400: '#DAD0BF',
+    500: '#FBF9F5',
+    600: '#F7F3EC',
+    700: '#EEE7DB',
   },
-  midnight: '#2E4755', // Midnight Dune 500 — shorthand
+  midnight: '#102746',
 
-  // ─────────────────────────────────────────
-  // TERTIARY — Use sparingly (~5% combined)
-  // Must be endorsed by Brand team before use
-  // ─────────────────────────────────────────
-
-  // Desert Sunrise (warm yellow/amber)
   desertSunrise: {
-    300: '#FFC575',
-    400: '#FFB33F',
-    500: '#FEAA00', // ← BASE
-    600: '#DD9300',
-    700: '#BD7D00',
+    300: '#F2C46F',
+    400: '#E7AD42',
+    500: '#D99618',
+    600: '#BD7E0D',
+    700: '#9E680A',
   },
 
-  // Liwa Orange (terracotta/rust)
   liwaOrange: {
-    300: '#FA9278',
-    400: '#F4706F',
-    500: '#F05D38', // ← BASE
-    600: '#D1502F',
-    700: '#B24527',
+    300: '#EFA18D',
+    400: '#E77C62',
+    500: '#D95D3F',
+    600: '#BE4C32',
+    700: '#9D3F2A',
   },
 
-  // Saadiyat Blue (teal)
   saadiyatBlue: {
-    300: '#70BDC9',
-    400: '#3BAABA',
-    500: '#00A1B2', // ← BASE
-    600: '#00B89A',
-    700: '#007683',
+    300: '#86B7C7',
+    400: '#5E9EAF',
+    500: '#3B8498',
+    600: '#2F6D7D',
+    700: '#245361',
   },
 
-  // Jebel Grey (neutral grey)
   jebelGrey: {
-    300: '#8F8F8F',
-    400: '#717171',
-    500: '#636363', // ← BASE
-    600: '#555555',
-    700: '#474747',
+    300: '#8B93A0',
+    400: '#717B89',
+    500: '#626D7A',
+    600: '#515B67',
+    700: '#414A54',
   },
 
-  // ─────────────────────────────────────────
-  // MONOTONE
-  // ─────────────────────────────────────────
   black: '#000000',
   white: '#FFFFFF',
 
-  // ─────────────────────────────────────────
-  // SEMANTIC / UI ALIASES
-  // Map brand colours to functional roles
-  // ─────────────────────────────────────────
   background: {
-    primary: '#FDF9EF', // Qasr Stone — main app background
-    dark: '#1B1B1B', // App background — all pages
+    primary: '#F8F5EF',
+    // Existing screens use "dark" as their page/surface background token.
+    // Making it translucent preserves the API-provided room/background image.
+    dark: 'rgba(248,245,239,0.94)',
     white: '#FFFFFF',
   },
 
   text: {
-    primary: '#B08747', // Gold — headlines and brand text
-    dark: '#1B2932', // Midnight Dune 700 — body text on light bg
-    light: '#FFFFFF', // White — text on dark backgrounds
-    muted: '#636363', // Jebel Grey — secondary/helper text
+    primary: '#A87A2B',
+    dark: '#102746',
+    // Legacy pages commonly use text.light for body text; in the new light
+    // theme it maps to navy so page copy remains readable.
+    light: '#102746',
+    muted: '#687486',
+    secondary: '#C9D0D9',
   },
 
   button: {
-    primary: '#B08747', // Gold fill
-    primaryText: '#FFFFFF', // White label on gold
-    secondary: '#2E4755', // Midnight Dune fill
+    primary: '#A87A2B',
+    primaryText: '#FFFFFF',
+    secondary: '#102746',
     secondaryText: '#FFFFFF',
-    outline: '#B08747', // Gold border
-    outlineText: '#B08747',
+    outline: '#A87A2B',
+    outlineText: '#A87A2B',
   },
 
   border: {
-    default: '#C8AA7F', // Gold 300
-    light: '#EDE2D0', // Gold 100
-    dark: '#456577', // Midnight Dune 400
+    default: '#D7BE8E',
+    light: '#E9DDC8',
+    dark: '#102746',
   },
 
-  // Status colours (use tertiary colours for these)
   status: {
-    warning: '#FEAA00', // Desert Sunrise
-    error: '#F05D38', // Liwa Orange
-    info: '#00A1B2', // Saadiyat Blue
-    neutral: '#636363', // Jebel Grey
+    warning: '#D99618',
+    error: '#D95D3F',
+    info: '#3B8498',
+    neutral: '#626D7A',
   },
 
-  // ─────────────────────────────────────────
-  // OVERLAYS & TINTS (avoid arbitrary rgba)
-  // Gold tints for hover/pressed; Midnight for overlays
-  // ─────────────────────────────────────────
   overlay: {
     gold: {
-      5: 'rgba(176,135,71,0.05)',
-      6: 'rgba(176,135,71,0.06)',
-      8: 'rgba(176,135,71,0.08)',
-      10: 'rgba(176,135,71,0.10)',
-      12: 'rgba(176,135,71,0.12)',
-      14: 'rgba(176,135,71,0.14)',
-      15: 'rgba(176,135,71,0.15)',
-      18: 'rgba(176,135,71,0.18)',
-      20: 'rgba(176,135,71,0.20)',
-      30: 'rgba(176,135,71,0.30)',
-      35: 'rgba(176,135,71,0.35)',
-      40: 'rgba(176,135,71,0.40)',
-      75: 'rgba(176,135,71,0.75)',
+      5: 'rgba(168,122,43,0.05)',
+      6: 'rgba(168,122,43,0.06)',
+      8: 'rgba(168,122,43,0.08)',
+      10: 'rgba(168,122,43,0.10)',
+      12: 'rgba(168,122,43,0.12)',
+      14: 'rgba(168,122,43,0.14)',
+      15: 'rgba(168,122,43,0.15)',
+      18: 'rgba(168,122,43,0.18)',
+      20: 'rgba(168,122,43,0.20)',
+      30: 'rgba(168,122,43,0.30)',
+      35: 'rgba(168,122,43,0.35)',
+      40: 'rgba(168,122,43,0.40)',
+      75: 'rgba(168,122,43,0.75)',
     },
     midnight: {
-      50: 'rgba(46,71,85,0.5)',
-      60: 'rgba(46,71,85,0.6)',
-      70: 'rgba(46,71,85,0.7)',
-      72: 'rgba(46,71,85,0.72)',
-      85: 'rgba(46,71,85,0.85)',
-      88: 'rgba(46,71,85,0.88)',
-      96: 'rgba(46,71,85,0.96)',
-      97: 'rgba(46,71,85,0.97)',
+      50: 'rgba(16,39,70,0.50)',
+      60: 'rgba(16,39,70,0.60)',
+      70: 'rgba(16,39,70,0.70)',
+      72: 'rgba(16,39,70,0.72)',
+      85: 'rgba(16,39,70,0.85)',
+      88: 'rgba(16,39,70,0.88)',
+      96: 'rgba(16,39,70,0.96)',
+      97: 'rgba(16,39,70,0.97)',
     },
     black: {
       45: 'rgba(0,0,0,0.45)',
@@ -185,8 +153,8 @@ export const Colors = {
       35: 'rgba(255,255,255,0.35)',
     },
     border: {
-      gold20: 'rgba(200,170,127,0.20)',
-      gold10: 'rgba(200,170,127,0.10)',
+      gold20: 'rgba(168,122,43,0.20)',
+      gold10: 'rgba(168,122,43,0.10)',
     },
   },
 } as const;

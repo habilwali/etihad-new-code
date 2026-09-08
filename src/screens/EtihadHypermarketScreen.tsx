@@ -34,7 +34,7 @@ import {
 const { width: SW, height: SH } = Dimensions.get('window');
 
 /** Matches WelcomeScreen `bottomNavBar` — store title / meta row */
-const BOTTOM_BAR_BG = 'rgba(40,52,62,0.88)';
+const BOTTOM_BAR_BG = 'rgba(255,255,255,0.94)';
 
 /* ─── THEME (align with FacilitiesScreen — Etihad text + primary accents) ── */
 const C = {
@@ -559,12 +559,12 @@ const s = StyleSheet.create({
 
   greenRule: { height: 1 },
 
-  body: { flex: 1, flexDirection: 'row', overflow: 'hidden' },
+  body: { flex: 1, flexDirection: 'row', overflow: 'hidden', marginHorizontal: 28, marginBottom: 14, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.94)', borderWidth: 1, borderColor: Colors.overlay.gold[20] },
 
   sidebar: {
     width: SIDEBAR_W,
     borderRightWidth: 1,
-    borderRightColor: 'rgba(255,255,255,0.08)',
+    borderRightColor: 'rgba(168,122,43,0.14)',
     backgroundColor: BOTTOM_BAR_BG,
     flexDirection: 'column',
   },
@@ -577,7 +577,7 @@ const s = StyleSheet.create({
     paddingBottom: 10,
     gap: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: 'rgba(168,122,43,0.14)',
   },
   sidebarHeaderTxt: {
     fontFamily: FontFamily.book,
@@ -585,7 +585,7 @@ const s = StyleSheet.create({
     letterSpacing: 0.2,
     color: C.muted,
   },
-  sidebarHeaderLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.1)' },
+  sidebarHeaderLine: { flex: 1, height: 1, backgroundColor: 'rgba(168,122,43,0.16)' },
   sidebarItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -594,7 +594,7 @@ const s = StyleSheet.create({
     borderLeftWidth: 2,
     borderLeftColor: 'transparent',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.06)',
+    borderBottomColor: 'rgba(168,122,43,0.10)',
     gap: 12,
     position: 'relative',
   },
@@ -715,7 +715,7 @@ const s = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 4,
     overflow: 'hidden',
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(255,255,255,0.78)',
   },
   viewerAreaFocused: { borderColor: Colors.overlay.gold[35] },
   viewerTopBar: {
@@ -797,7 +797,7 @@ const s = StyleSheet.create({
     fontSize: 10,
     lineHeight: 15,
     letterSpacing: 0.2,
-    color: C.muted,
+    color: Colors.white,
     backgroundColor: Colors.overlay.black[55],
     paddingHorizontal: 12,
     paddingVertical: 4,
